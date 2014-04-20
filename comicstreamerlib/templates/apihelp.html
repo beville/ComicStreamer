@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="icon" href="/favicon.ico" />	      
+        
+        <title>ComicStreamer - API Help</title>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        
+        <style type="text/css">
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>
+       
+    </head>
+    <body>
+        <div id="header"><h2>ComicStreamer - API Help</h2></div>
+              
+        <div id=content>
+            <h3>ComicStreamer is in early alpha stages, API subject to change!</h3>
+            <pre>
+/dbinfo
+    - return some values about the database (ID, created date, last modified)
+    
+/version
+    - app version info
+    
+/deleted
+    - list of comic IDs that have been removed from the DB
+        args:
+            since
+                - date of the earliest returned value
+
+/comic/{id}
+    - info about specific comic
+
+/comic/{id}/page/{pagenum}
+    - return specific page image of specific comic
+        args:
+            max_height
+                - will resize image
+    
+/comic/{id}/thumbnail
+    - return specific small cover image of specific comic
+
+/comic/{id}/file
+    - return entire specific comic file
+        
+/comiclist
+    - return list of comics info.  with no args, returns entire list
+            args:
+                series
+                    filter by series (wildcard accepted)
+                title
+                    filter by issue title (wildcard accepted)
+                path
+                    filter by file path (wildcard accepted)
+                character
+                    filter by character (wildcard accepted)
+                team
+                    filter by team (wildcard accepted)
+                location
+                    filter by location (wildcard accepted)
+                storyarc
+                    filter by story arc (wildcard accepted)
+                tag
+                    filter by generic tag (wildcard accepted)
+                volume
+                    filter by volume (wildcard accepted)
+                publisher
+                    filter by publisher (wildcard accepted)
+                credit
+                    filter by creator credit (wildcard accepted)
+                    can be person name alone, or name followed by role, delimited with : (colon)
+                    e.g.
+                        credit=Brian*Vaughn
+                        credit=Brian*Vaughn:writer
+                        
+                start_date
+                    the beginning publication date of the resultset    
+                end_date
+                    the end publication date of the resultset
+                added_since
+                    filter comics added the to database since given date    
+                per_page
+                    max amount of results to be returned
+                offset
+                    the starting offset of the query resultset
+                order
+                    order by given key.  if key has "-" prepended, order descending
+                    available sort keys:
+                        series, title, volume, issue, publisher, path, modified, added, date
+            
+            wildcard character is * (asterisk)
+            
+            date format is YYYY-MM-DD-HH-MM, where the right-most (most granular) portions may be omitted
+
+/entities/[{key1}/[{val1}/[{key2}/[{val2}/....{keyN}/[{valN}]]]]]
+    TBD
+
+            </pre>
+        </div>
+        
+        <div id=navigation>
+            {% include menu.html %}
+        </div>
+       
+    </body>
+</html>
+

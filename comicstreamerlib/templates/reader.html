@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html>
+
+    <head>
+        <script language="JavaScript1.1">
+        <!--
+        
+        var imageList=new Array()
+        function createSlideshowImageList()
+        {
+            for (i=0;i<createSlideshowImageList.arguments.length;i++)
+            {
+                imageList[i]=new Image()
+                imageList[i].src=createSlideshowImageList.arguments[i]
+            }
+        }
+             
+        //-->
+        </script>
+    
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        
+        
+    </head>
+    <body> 
+        
+        <a href="javascript:showNextImage()"><img src="page/0" name="slide" border=0 ></a>
+        <script>
+            <!--
+        
+            //configure the paths of the images
+            createSlideshowImageList( {{ make_list(id,count) }} "null")
+        
+            var wait_time = 3000000 //in ms
+            var curr_image = 0
+            
+            function showNextImage()
+            {
+                if (!document.images)
+                    return
+                
+                document.images.slide.src = imageList[curr_image].src
+                
+                if (curr_image<imageList.length-1)
+                    curr_image++
+                else
+                    curr_image=0
+                setTimeout("showNextImage()", wait_time)
+            }
+            
+            showNextImage()
+            
+            //-->
+        </script>
+    
+    </body>
+
+</html>

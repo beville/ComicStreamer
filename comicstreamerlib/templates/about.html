@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="icon" href="/favicon.ico" />	      
+        
+        <title>ComicStreamer - About</title>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        
+        <style type="text/css">
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>
+    
+    </head>
+    <body>
+        <div id="header"><h2>ComicStreamer - About</h2></div>
+            
+        <div id=content>
+            <pre>
+ComicTagger 0.0.1
+A comic file media server
+
+Copyright 2014 Anthony Beville
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+ComicStreamer uses the following packages/projects:
+
+Server-side:
+    Python (https://www.python.org/)
+    SQLAlchemy (http://www.sqlalchemy.org/)
+    Tornado (http://www.tornadoweb.org)
+    Python Imaging Library (http://www.pythonware.com/products/pil/)
+    Watchdog (http://pythonhosted.org//watchdog/)
+    Dateutil (https://labix.org/python-dateutil)
+    ConfigObj (http://www.voidspace.org.uk/python/configobj.html)
+    ComicTagger (http://code.google.com/p/comictagger/)
+
+Client-side:
+    Dynatable (http://www.dynatable.com/)
+    qTip2 (http://qtip2.com/)
+    Bala Clark's Comic Reader (https://github.com/balaclark/HTML5-Comic-Book-Reader)
+
+
+            </pre>
+            
+        </div>
+        
+        <div id=navigation>
+            {% include menu.html %}
+        </div>
+    
+    </body>
+</html>
+

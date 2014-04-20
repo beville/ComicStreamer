@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <link rel="icon" href="/favicon.ico" />	      
+        
+        <title>ComicStreamer - Config</title>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        
+        <style type="text/css">
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>
+       
+    </head>
+    <body>
+        <div id="header"><h2>ComicStreamer - Config</h2></div>
+        
+        <div id=content>
+            <div id="tbd">
+                TBD:
+                <li>settings (port, folders, etc)</li>
+                <li>Set web page passwords</li>
+                <li>Set API key</li>
+            </div>
+            <br>
+        </div>
+        
+        <div id=navigation>
+            {% include menu.html %}
+        </div>
+    
+    </body>
+</html>
+

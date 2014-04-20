@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <link rel="icon" href="/favicon.ico" />	      
+        <title>ComicStreamer - Entities</title>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        
+        <style type="text/css">
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>      
+        <script type="text/javascript" language="javascript">
+        
+            var url = '/entities/{{args}}';
+            var items = [];
+            
+            var wordList = url.split('/');
+            var lastWord = wordList[wordList.length - 1];
+            
+            function entity_list_pusher( key, val )
+            {
+                //items.push( "<li id='" + key + "'>" + val + "</li>" );
+                if (!(val.count == 0  || (val.count == 1 && val.name != "comics")))
+                {
+                    items.push( "<li><a href=\"" + document.URL +"/" + val.name + "\">" + val.name + " (" + val.count +")</a></li>" );
+                }
+            }
+
+            function value_list_pusher( key, val )
+            {
+                //items.push( "<li id='" + key + "'>" + val + "</li>" );
+                items.push( "<li><a href=\"" + document.URL +"/" + val + "\">" + val+"</a></li>" );
+            }
+            
+            function processEntityList(data)
+            {
+                entity_name = Object.keys(data)[0]
+
+                entity_list = data[entity_name];
+
+                if (entity_name == "entities")
+                {
+                    $.each( entity_list, entity_list_pusher);
+                }
+                else
+                {
+                    $.each( entity_list, value_list_pusher);                    
+                }
+
+                content = document.getElementById("content");
+                $( "<ul/>", {
+                  "class": "my-new-list",
+                  html: items.join( "" )
+                }).appendTo( content );
+            }
+            
+            //function processComicResults(data)
+            //{
+            //	window.location	
+            //}
+            
+            
+            //console.log(lastWord);
+            if (lastWord == 'comics')
+            {
+                // redirect to the comic browser page
+                window.location = "/comiclist/browse?entity_src="+url
+                //$.getJSON( url, processComicResults);
+            }
+            else
+            {
+                $.getJSON( url, processEntityList);			
+            }
+        </script>
+
+ 
+   </head>
+    <body>
+        <div id="header"><h2>ComicStreamer - Entities</h2></div>
+              
+        <div id=content>
+            <div id="tbd">
+                TBD:
+                <li>better formatting</li>
+                <li>add bread crumbs</li>
+            </div>
+            <br>
+        </div>
+   
+        <div id=navigation>
+            {% include menu.html %}
+        </div>   
+     </body>
+</html>
+

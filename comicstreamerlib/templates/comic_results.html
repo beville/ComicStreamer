@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <link rel="icon" href="/favicon.ico" />	      
+        <title>ComicStreamer - Search Results</title>
+        
+        <style type="text/css" title="currentStyle">
+            @import "{{ static_url('datatables/media/css/demo_page.css') }}";
+            @import "{{ static_url('datatables/media/css/demo_table.css') }}";
+            @import "{{ static_url('datatables/examples/examples_support/themes/smoothness/jquery-ui-1.8.4.custom.css') }}";         
+            @import "{{ static_url('qtip2/jquery.qtip.css') }}";         
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>
+        
+        <script type="text/javascript" language="javascript">
+            // helper function to give us Python-style formats
+            if (!String.format)
+            {
+                String.format = function(format)
+                {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    return format.replace(/{(\d+)}/g, function(match, number) { 
+                      return typeof args[number] != 'undefined'
+                        ? args[number] 
+                        : match
+                      ;
+                    });
+                };
+            }
+            // a hacky way to make a string with line-breaks
+            function hereDoc(f)
+            {
+                return f.toString().
+                    replace(/^[^\/]+\/\*!?/, '').
+                    replace(/\*\/[^\/]+$/, '');
+            }             
+      
+            // create tooltip html string (not really a comment!)
+            // TODO: figure out how to do this with CSS
+            var toolTipHTML = hereDoc(function() {/*!
+                    <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div style="text-align:center">
+                                    <a href="../comic/{5}/reader" target="_blank">
+                                        <img src="../comic/{5}/thumbnail">
+                                    </a>
+                                </div>
+                            </td> 
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="text-align:center">
+                                    <b>{0} #{1}</b><br>
+                                    <i>{2} ({3})</i><br><br>
+                                </div>
+                                {4}
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>  
+                */ });
+        
+           
+        </script>
+        
+        <script type="text/javascript" language="javascript" src="{{ static_url('datatables/media/js/jquery.js') }}"></script>
+        <script type="text/javascript" language="javascript" src="{{ static_url('datatables/media/js/jquery.dataTables.js') }}"></script>
+        <script src="{{ static_url('qtip2/jquery.qtip.js') }}"></script>
+        
+        
+        <script type="text/javascript" charset="utf-8">
+        
+            function createRowCallback(nRow, comic, iDisplayIndex)
+            {
+                // When each row is created, setup its tooltip HTML
+                $(nRow).addClass('result_row');
+                // truncate comments
+                if (comic.comments != null && comic.comments.length > 800)
+                {
+                    comments = comic.comments.substring(0,800) + "..."
+                }
+                else
+                {
+                    comments = comic.comments
+
+                }
+                popup_text = String.format(toolTipHTML, comic.series, comic.issue, comic.pub,
+                                               comic.year, comments, comic.id);
+                $(nRow).qtip( {
+                        show: 'click',
+                        hide: 'unfocus',
+                        content: {
+                           text: popup_text,
+                            button: 'Close'
+                         },
+                        position: {
+                            target: $(window), 
+                            my: 'center',
+                            at: 'center',
+                            viewport: $(window),
+                            adjust: {
+                                screen: true,
+                            } 
+                        },
+                        style: {
+                            classes: 'qtip-blue qtip-shadow',
+                            width: 800
+                        }
+                    });
+
+                return nRow;            
+            }
+            
+            var table_init =
+            {
+                "bProcessing": true,
+                //"bSort": false,
+                "aaSorting": [] ,
+                "bJQueryUI": true,
+                "sAjaxSource": '{{src}}',
+                "sAjaxDataProp": "comics",
+                "bAutoWidth": true,
+                "aoColumns": [
+                   { "mData": "id", "bVisible": false, "bSearchable": false },
+                   { "mData": "comments", "bVisible": false, "bSearchable": false },
+                   { "mData": "series" },
+                   { "mData": "volume" },
+                   { "mData": "issue" },
+                   { "mData": "title" },
+                   { "mData": "pub" },
+                   { "mData": "year" },
+                   { "mData": "path",
+                     "mRender": function ( data, type, full )
+                      {
+                              return data.split(/[\\/]/).pop();
+                      }
+                   },
+                      
+                   ],
+                "fnRowCallback": createRowCallback,            
+            };
+        
+            $(document).ready(
+                function()
+                {
+                    var oTable = $('#resultset').dataTable( table_init);
+                }
+            );
+        </script>
+
+ 
+    </head>
+    <body>
+   
+        <div id="header"><h2>ComicStreamer - Search Results</h2></div>
+        <div id=content>
+            <table id="resultset" width="80%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Comments</th>
+                        <th>Series</th>
+                        <th>Volume</th>
+                        <th>Issue</th>
+                        <th>Title</th>
+                        <th>Publisher</th>
+                        <th>Year</th>
+                        <th>Filename</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+    
+            <br>	  
+            <div id="tbd">
+                TBD:
+                <li>Better table style</li>
+                <li>Better popups</li>
+                <li>More columns,(horiz scrolling??)</li>
+                <li>File download links in popup</li>
+                <li>Thumbnails in table??</li>	  
+            </div>
+        </div>
+    
+        <div id=navigation>
+            {% include menu.html %}
+        </div> 
+       
+    </body>
+</html>
+

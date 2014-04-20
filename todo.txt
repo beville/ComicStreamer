@@ -1,0 +1,111 @@
+Priority
+
+   bug: per_page setting slice off child lists...??
+      
+----------------
+Database:
+   Versioning scheme?? (migrate or rebuild with change?)
+   genre as a list??
+   Weird error at startup
+   Turn off "credits" string popping up!
+   cascade delete issue
+   add comic size (in Mb) to DB
+   
+----------------
+General Server
+   low priority:  MDNS/bonjour
+   loading strategies: http://docs.sqlalchemy.org/en/rel_0_7/orm/loading.html
+
+API
+
+   Versioning scheme!
+   proper sorting by issue number (numeric, not string)
+   selective fields
+   search with OR in field
+   searching
+      look into more broad search terms
+      genre (is it a list?)
+
+------------------
+ENTITY API
+      entity list:
+		 year? (or decade?)
+---------------------------      
+  
+Add bookmark parameter to page handler so clients can mark pages?
+
+
+Web UI
+      -- random comic link
+      -- recently read, with bookmarks
+      "date added" to popup? 
+   
+   
+   
+Monitor
+  watchdog on multiple folders
+   
+   
+OS Integration:
+   add minimal GUI front end for windows and mac
+      Mac OS - icon and dropdown menu
+      Windows, status box icon and menu
+   Linux init script to run as server
+   
+   Look into SABZBd implementation
+
+------------------------
+Authentication!!
+---------------------
+
+Requirements:
+   tornado
+   sqlalchemy > 0.9
+   watchdog
+   dateutil
+   pil
+   configobj
+   comictagger
+  
+-------------------
+Bonus SQL!
+-------------------
+CREATE VIEW credits_view AS
+select comics.id, persons.name as person, roles.name as role
+from comics 
+inner join credits
+   on credits.comic_id=comics.id
+inner join persons
+   on credits.person_id=persons.id
+inner join roles 
+   on credits.role_id=roles.id
+where comics.id=1 
+-------------------
+
+
+Convert single item query to simple list
+      [i[0] for i in list(q)]
+
+import pdb; pdb.set_trace()
+will enter the python debugger at that point
+
+import code; code.interact(local=locals())  ####ATB Debug    
+      
+c=s.query(Comic).join(Credit).join(Role).join(Person).filter(Role.name=="penciller").filter(Person.name=="Jeff Lemire")
+
+
+--------------------
+--dyntable hack -just before $.ajax() call
+      //!!!ATB - personal hack for sorting with comicstreamer
+      if ("sorts" in options.data)
+      {
+        name = Object.keys(options.data.sorts)[0];
+        desc = '';
+        if (options.data.sorts[name]==-1)
+        {
+          desc = '-';
+        }
+        options.data.order = desc+name;
+      }
+      
+      $.ajax(options);
