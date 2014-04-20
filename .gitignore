@@ -1,0 +1,7 @@
+# Auto-generated
+*.pyc
+
+# Testing stuff
+test/
+test.py
+
