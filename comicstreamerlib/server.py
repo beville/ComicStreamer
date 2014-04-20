@@ -153,7 +153,7 @@ class JSONResultAPIHandler(BaseHandler):
         if hasValue(added_since):
             try:
                 dt=dateutil.parser.parse(added_since)
-                query = query.filter( Comic.add_ts >= dt )
+                query = query.filter( Comic.added_ts >= dt )
             except:
                 pass
         
@@ -283,9 +283,8 @@ class ComicListAPIHandler(ZippableAPIHandler):
         #import code; code.interact(local=locals())
         logging.debug( "before query" )
         
-        self.application.dm.engine.echo = True
+        #self.application.dm.engine.echo = True
         query = query.options(subqueryload('characters_raw'))
-        #self.application.dm.engine.echo = False
         query = query.options(subqueryload('storyarcs_raw'))
         query = query.options(subqueryload('locations_raw'))
         query = query.options(subqueryload('teams_raw'))
@@ -296,7 +295,7 @@ class ComicListAPIHandler(ZippableAPIHandler):
 
 
         logging.debug( "after query" )
-        self.application.dm.engine.echo = False
+        #self.application.dm.engine.echo = False
         
         logging.debug( "before JSON render" )
         json_data = resultSetToJson(resultset, "comics", total_results)
