@@ -14,7 +14,8 @@ like ComicTagger (http://code.google.com/p/comictagger/) or ComicRack
 try to parse out some information from the filename (usually series,
 issue number, and publication year).
 
-ComicStreamer is very early stages, many changes likely to come!
+ComicStreamer is very early ALPHA stages,  and may be be very flakey, eating up 
+memory and CPU cycles. 
 
 ----------------
 Requirements 
