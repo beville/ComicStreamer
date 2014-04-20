@@ -22,8 +22,9 @@ may provide erroneous results.
 ----------------
 Requirements 
 ----------------
-(via pip):
+   python 2.7
 
+(via pip):
    tornado
    sqlalchemy > 0.9
    watchdog
