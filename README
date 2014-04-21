@@ -14,11 +14,9 @@ like ComicTagger (http://code.google.com/p/comictagger/) or ComicRack
 try to parse out some information from the filename (usually series,
 issue number, and publication year).
 
-ComicStreamer is very early ALPHA stages, and may be be very flakey, eating up 
+ComicStreamer is very early ALPHA stages, and may be very flakey, eating up 
 memory and CPU cycles. In particular, with very large datasets, filters on the
-sub-lists (characters, credits ) can be slow, and credit filters in particular
-may provide erroneous results.
-
+sub-lists (characters, credits, etc. ) can be slow.
 ----------------
 Requirements 
 ----------------
