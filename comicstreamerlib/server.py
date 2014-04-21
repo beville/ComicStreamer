@@ -233,7 +233,7 @@ class ImageAPIHandler(GenericAPIHandler):
                 image_data = ca.getPage(int(pagenum))
     
         if image_data is None:
-            f = open("images/default.jpg", 'r')
+            f = open(os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"), 'r')
             image_data = f.read()
             f.close()
             
