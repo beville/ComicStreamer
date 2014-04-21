@@ -97,10 +97,11 @@ class JSONResultAPIHandler(BaseHandler):
                     role = credit_info[1]
 
         if hasValue(person):
-            cred_alias = aliased(Credit)
-            query = query.join(cred_alias,Credit).join(Person).filter(Person.name.ilike(person.replace("*","%")))
-            if role is not None:
-                query = query.join(Role).filter(Role.name.ilike(role.replace("*","%")))
+            #cred_alias = aliased(Credit)
+            #query = query.join(cred_alias,Credit).filter(Comic.id == Credit.comic_id).join(Person).filter(Person.id == Credit.person_id).filter(Person.name.ilike(person.replace("*","%")))
+            #if role is not None:
+            #    query = query.join(Role).filter(Role.name.ilike(role.replace("*","%")))
+            query = query.filter( Comic.persons.contains(unicode(person).replace("*","%") ))
         
         # now winnow it down with other searches
         if hasValue(series_filter):
@@ -413,7 +414,7 @@ class EntityAPIHandler(JSONResultAPIHandler):
                     'characters' : Character.name,
                     'persons' : Person.name,
                     'publishers' : Comic.publisher,
-                    'roles' : Role.name,
+                    #'roles' : Role.name,
                     'series': Comic.series,
                     'volumes' : Comic.volume,
                     'teams' : Team.name,
