@@ -57,7 +57,7 @@ class Monitor():
     def mainLoop(self):
 
         logging.debug("Monitor: started main loop.")
-        self.session = Session()
+        self.session = session = self.dm.Session()
         
         observer = Observer()
         #!!!ATB do i need to call this multiple times?
@@ -406,7 +406,9 @@ class Monitor():
         logging.debug(u"Monitor: Done removing files.")
         
         if self.remove_count > 0:
+            self.dm.engine.echo = True
             self.session.commit()
+            self.dm.engine.echo = False
 
         logging.debug(u"Monitor: found {0} files to inspect...".format(len(filelist)))
         
@@ -475,7 +477,7 @@ if __name__ == '__main__':
     
     dm = DataManager()
     dm.create()
-    m = Monitor(sys.argv[1:])
+    m = Monitor(dm, sys.argv[1:])
     m.quit_when_done = True
     m.start()
     m.scan()
