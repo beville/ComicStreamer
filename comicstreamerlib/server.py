@@ -224,7 +224,7 @@ class ImageAPIHandler(GenericAPIHandler):
     
     def getImageData(self, comic_id, pagenum):
         #TODO handle errors in this func!
-        session = Session()
+        session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         image_data = None
         if obj is not None:
@@ -259,7 +259,7 @@ class VersionAPIHandler(JSONResultAPIHandler):
 
 class DBInfoAPIHandler(JSONResultAPIHandler):
     def get(self):
-        session = Session()
+        session = self.application.dm.Session()
         obj = session.query(DatabaseInfo).first()   
         response = { 'id': obj.uuid,
                     'last_updated':  obj.last_updated.isoformat(),
@@ -273,7 +273,7 @@ class ComicListAPIHandler(ZippableAPIHandler):
     def get(self):
 
         # create a query on all comics
-        session = Session()
+        session = self.application.dm.Session()
         query = session.query(Comic)
         
         query = self.processComicQueryArgs(query)
@@ -289,7 +289,7 @@ class ComicListAPIHandler(ZippableAPIHandler):
         query = query.options(subqueryload('storyarcs_raw'))
         query = query.options(subqueryload('locations_raw'))
         query = query.options(subqueryload('teams_raw'))
-        query = query.options(subqueryload('credits_raw'))
+        #query = query.options(subqueryload('credits_raw'))
         query = query.options(subqueryload('generictags_raw'))
         
         resultset = query.all()
@@ -308,7 +308,7 @@ class DeletedAPIHandler(ZippableAPIHandler):
     def get(self):
     
         # get all deleted comics first
-        session = Session()
+        session = self.application.dm.Session()
         resultset = session.query(DeletedComic)
         
         since_filter = self.get_argument(u"since", default=None)
@@ -349,7 +349,7 @@ class EntitiesBrowserHandler(BaseHandler):
 
 class ComicAPIHandler(JSONResultAPIHandler):
     def get(self, id):
-        session = Session()
+        session = self.application.dm.Session()
         result = session.query(Comic).filter(Comic.id == int(id)).all()
         self.setContentType()
         self.write(resultSetToJson(result, "comics"))
@@ -384,7 +384,7 @@ class FileAPIHandler(GenericAPIHandler):
     def get(self, comic_id):
 
         #TODO handle errors in this func!
-        session = Session()
+        session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         if obj is not None:
             ca = ComicArchive(obj.path)
@@ -403,7 +403,7 @@ class FileAPIHandler(GenericAPIHandler):
             
 class EntityAPIHandler(JSONResultAPIHandler):
     def get(self, args):            
-        session = Session()
+        session = self.application.dm.Session()
         
         arglist=args.split('/')
             
@@ -487,7 +487,7 @@ class EntityAPIHandler(JSONResultAPIHandler):
                 query = query.options(subqueryload('storyarcs_raw'))
                 query = query.options(subqueryload('locations_raw'))
                 query = query.options(subqueryload('teams_raw'))
-                query = query.options(subqueryload('credits_raw'))                
+                #query = query.options(subqueryload('credits_raw'))                
                 query = query.options(subqueryload('generictags_raw'))                
                 query = query.all()
                 resp = resultSetToJson(query, "comics", total_results)                
@@ -508,20 +508,21 @@ class EntityAPIHandler(JSONResultAPIHandler):
         querylist = []
         #To build up the query, bridge every entity to a comic table
         querybase = session.query(entities[entity])
-        if entity == 'roles':
-            querybase = querybase.join(comics_roles_persons_table).join(Comic)
-        if entity == 'persons':
-            querybase = querybase.join(comics_roles_persons_table).join(Comic)
-        if entity == 'characters':
-            querybase = querybase.join(comics_characters_table).join(Comic)
-        if entity == 'teams':
-            querybase = querybase.join(comics_teams_table).join(Comic)
-        if entity == 'storyarcs':
-            querybase = querybase.join(comics_storyarcs_table).join(Comic)
-        if entity == 'locations':
-            querybase = querybase.join(comics_locations_table).join(Comic)
-        if entity == 'generictags':
-            querybase = querybase.join(comics_generictags_table).join(Comic)
+        if len(arglist) != 1:
+            if entity == 'roles':
+                querybase = querybase.join(Credit).join(Comic)
+            if entity == 'persons':
+                querybase = querybase.join(Credit).join(Comic)
+            if entity == 'characters':
+                querybase = querybase.join(comics_characters_table).join(Comic)
+            if entity == 'teams':
+                querybase = querybase.join(comics_teams_table).join(Comic)
+            if entity == 'storyarcs':
+                querybase = querybase.join(comics_storyarcs_table).join(Comic)
+            if entity == 'locations':
+                querybase = querybase.join(comics_locations_table).join(Comic)
+            if entity == 'generictags':
+                querybase = querybase.join(comics_generictags_table).join(Comic)
         
         #print "Result entity is====>", entity
         #iterate over list, 2 at a time, building query list,
@@ -531,11 +532,11 @@ class EntityAPIHandler(JSONResultAPIHandler):
             query = querybase
             if e == 'roles':
                 if entity != 'persons':
-                    query = query.join(comics_roles_persons_table)
+                    query = query.join(Credit)
                 query = query.join(Role)
             if e == 'persons':
                 if entity != 'roles':
-                    query = query.join(comics_roles_persons_table)
+                    query = query.join(Credit)
                 query = query.join(Person)
             if e == 'characters':
                 query = query.join(comics_characters_table).join(Character)
@@ -560,7 +561,7 @@ class EntityAPIHandler(JSONResultAPIHandler):
         
 class ReaderHandler(BaseHandler):
     def get(self, comic_id):
-        session = Session()
+        session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         page_data = None
         if obj is not None:
@@ -587,7 +588,7 @@ class UnknownHandler(BaseHandler):
 
 class MainHandler(BaseHandler):
     def get(self):
-            session = Session()
+            session = self.application.dm.Session()
             stats=dict()
             stats['total'] = session.query(Comic).count()
             dt = session.query(DatabaseInfo).first().last_updated
