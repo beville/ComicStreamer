@@ -10,10 +10,11 @@ import os
 
 from config import ComicStreamerConfig
 
-
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Table, ForeignKey
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine, func
 from sqlalchemy.ext.declarative import DeclarativeMeta
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -22,6 +23,7 @@ from sqlalchemy.orm.properties import \
                         ColumnProperty,\
                         CompositeProperty,\
                         RelationshipProperty
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
 
 Base = declarative_base()
@@ -117,14 +119,6 @@ comics_generictags_table = Table('comics_generictags', Base.metadata,
      Column('generictags_id', Integer, ForeignKey('generictags.id'))
 )
 
-# Junction table
-# (Dupe of Credit object)
-comics_roles_persons_table = Table('credits', Base.metadata,
-    Column('comic_id', Integer, ForeignKey('comics.id')),
-    Column('role_id', Integer, ForeignKey('roles.id')),
-    Column('person_id', Integer, ForeignKey('persons.id'))
-)
-
 
 class CreditComparator(RelationshipProperty.Comparator):
     def __eq__(self, other):
@@ -162,23 +156,31 @@ class Comic(Base):
     added_ts = Column(DateTime, default=datetime.utcnow)  # when the comic was added to the DB
     mod_ts = Column(DateTime)  # the last modified date of the file
     
-    credits_raw = relationship('Credit', secondary=credits,
-                               cascade="all, delete", )#, backref='comics')
+    credits_raw = relationship('Credit', #secondary=credits_,
+                                cascade="all, delete", )#, backref='comics')
     characters_raw = relationship('Character', secondary=comics_characters_table,
-                                cascade="all, delete")#, backref='comics')
+                                cascade="delete")#, backref='comics')
     teams_raw = relationship('Team', secondary=comics_teams_table,
-                                cascade="all, delete") #)#, backref='comics')
+                                cascade="delete") #)#, backref='comics')
     locations_raw = relationship('Location', secondary=comics_locations_table,
-                                cascade="all, delete") #, backref='comics')
+                                cascade="delete") #, backref='comics')
     storyarcs_raw = relationship('StoryArc', secondary=comics_storyarcs_table,
-                                cascade="all, delete") #, backref='comics')
+                                cascade="delete") #, backref='comics')
     generictags_raw = relationship('GenericTag', secondary=comics_generictags_table,
-                                cascade="all, delete") #, backref='comics')
-    persons_raw = relationship('Person', secondary=comics_roles_persons_table)
-                                #cascade="all, delete")#, backref='comics')
-    roles_raw = relationship('Role', secondary=comics_roles_persons_table),
-                                #cascade="all, delete")#, backref='comics')
+                                cascade="delete") #, backref='comics')
 
+    persons_raw = relationship("Person",
+                secondary="join(Credit, Person, Credit.person_id == Person.id)",
+                primaryjoin="and_(Comic.id == Credit.comic_id)",
+                #passive_updates=False,
+                viewonly=True
+                )
+    roles_raw = relationship("Role",
+                secondary="join(Credit, Role, Credit.role_id == Role.id)",
+                primaryjoin="and_(Comic.id == Credit.comic_id)",
+                #passive_updates=False,
+                viewonly=True               
+                )
 
     #credits = association_proxy('credits_raw', 'person_role_dict')
     characters = association_proxy('characters_raw', 'name')
@@ -208,19 +210,19 @@ class Comic(Base):
 
 class Credit(Base):
     __tablename__ = 'credits'
-    __table_args__ = {'extend_existing': True}
+    #__table_args__ = {'extend_existing': True}
     comic_id = Column(Integer, ForeignKey('comics.id'), primary_key=True)
     role_id = Column(Integer, ForeignKey('roles.id'), primary_key=True)
     person_id = Column(Integer, ForeignKey('persons.id'), primary_key=True)
 
     #bidirectional attribute/collection of "comic"/"credits"
-    comic = relationship(Comic,
-                backref=backref("credits_backref_raw"),
-                                #cascade="all, delete-orphan")
-            )
+    #comic = relationship(Comic,
+    #            backref=backref("credits_backref_raw"),
+    #                            #cascade="all, delete-orphan")
+    #        )
 
-    person = relationship("Person", cascade="all, delete")
-    role = relationship("Role", cascade="all, delete")
+    person = relationship("Person", cascade="all, delete") #, backref='credits')
+    role = relationship("Role" , cascade="all, delete") #, backref='credits')
 
     def __init__(self, person=None, role=None):
         self.person = person
@@ -326,11 +328,14 @@ class DataManager():
     def create(self):
         
         self.engine = create_engine('sqlite:///'+ self.dbfile, echo=False)
-        Session.configure(bind=self.engine)
-        Base.metadata.create_all(self.engine) 
- 
+
+        session_factory = sessionmaker(bind=self.engine)
+        self.Session = scoped_session(session_factory) 
+
         # if we don't have a UUID for this DB, add it.
-        session = Session()
+        Base.metadata.create_all(self.engine) 
+
+        session = self.Session()
         
         results = session.query(DatabaseInfo).first()
         if results is None:
@@ -340,98 +345,10 @@ class DataManager():
            session.add(dbinfo)
            session.commit()
            logging.debug("Added new uuid".format(dbinfo.uuid))
-        
-        
-    def createOrFetchByName(self, session, cls, instance_name):
-        try:
-            obj = session.query(cls).filter_by(name=instance_name).one()
-            #print "FETCH:=", obj.name, obj.id, type(obj)
-        except:
-            obj = cls(name=instance_name)
-            session.add(obj)
-            #session.flush()
-            #print "CREATE:=", obj.name, obj.id, type(obj)
-        return obj
-        
-    def runTest(self):
-
-        session = Session()
-
-        comicWatchmen_1 = Comic(series="Watchmen", pub="DC Comics", issue="1", volume=1)
-        comicMiracleman_15 = Comic(series="Miracleman", pub="Eclipse", issue="15", volume=3)
-        comicMiracleman_17 = Comic(series="Miracleman", pub="Eclipse", issue="17", volume=3)
-
-        session.add(comicWatchmen_1)
-        session.add(comicMiracleman_17)
-        session.add(comicMiracleman_15)
-
-        
-        pAMoore = self.createOrFetchByName(session, Person, "Alan Moore")
-        pDGibbons = self.createOrFetchByName(session, Person, "Dave Gibbons")
-        pJTotleben = self.createOrFetchByName(session, Person, "John Totleben")
-        pNGaiman = self.createOrFetchByName(session, Person, "Neil Gaiman")
-        pMBuckingham = self.createOrFetchByName(session, Person, "Mark Buckingham")
-        
-        rWriter = self.createOrFetchByName(session, Role, "writer")
-        rArtist = self.createOrFetchByName(session, Role, "artist")
-    
-        charNiteOwl =  self.createOrFetchByName(session, Character, "Nite Owl")
-        charDocM =     self.createOrFetchByName(session, Character, "Dr. Manhattan")
-        charComedian = self.createOrFetchByName(session, Character, "The Comedian")
-        charMM =       self.createOrFetchByName(session, Character, "Miracleman")
-        charWinter =   self.createOrFetchByName(session, Character, "Winter")
-        
-        #session.flush()
-            
-        comicWatchmen_1.characters_raw.append(charNiteOwl)
-        comicWatchmen_1.characters_raw.append(charDocM)
-        comicWatchmen_1.characters_raw.append(charComedian)
-
-        comicMiracleman_15.characters_raw.append(charMM)
-        comicMiracleman_15.characters_raw.append(charWinter)
-        comicMiracleman_17.characters_raw.append(charMM)
-        comicMiracleman_17.characters_raw.append(charWinter)
-        
-        
-        comicWatchmen_1.credits_raw.append(Credit(pAMoore, rWriter))
-        comicWatchmen_1.credits_raw.append(Credit(pDGibbons, rArtist))
-        comicMiracleman_15.credits_raw.append(Credit(pJTotleben, rArtist))
-        comicMiracleman_15.credits_raw.append(Credit(pAMoore, rWriter))
-        comicMiracleman_17.credits_raw.append(Credit(pNGaiman, rWriter))
-        comicMiracleman_17.credits_raw.append(Credit(pMBuckingham, rArtist))
-
-        session.commit()
-
-        #my_comic = session.query(Comic).filter_by(series='Watchmen').first()
-        
-        #print my_comic, "\n"
-        #print session.query(Comic).filter(Comic.series.like('%ex')).count() 
-        #print session.query(Comic).count() 
-    
-        comicWatchmen_1.test = [(u'Alan Moore', u'writer'), (u'John Totleben', u'artist')]
-
-        rset = session.query(Comic)#.filter_by(series='Miracleman', issue="17")
-        #print rset
-        for r in rset:
-            print "{0} #{1}: ".format(r.series,r.issue)
-            print r.credits
-            #for c in r.credits:
-            #   print "    ",c
-            print r.characters  
-            #for c in r.characters:
-            #   print "    ",c
-    
-                
-        response = resultSetToDict(rset)
-        #print response['aaData']
-        print json.dumps(response, cls=alchemy_encoder(), check_circular=False, indent=2)
-        #print json_data
-
-
 
 if __name__ == "__main__":
     dm = DataManager()
     dm.create()
-    dm.runTest()
+
 
    
