@@ -134,6 +134,7 @@ class MyComparator(ColumnProperty.Comparator):
 
 class Comic(Base):
     __tablename__ = 'comics'
+    __table_args__ = {'sqlite_autoincrement': True}
 
     id = Column(Integer, primary_key=True)
     path = Column(String, unique=True)
