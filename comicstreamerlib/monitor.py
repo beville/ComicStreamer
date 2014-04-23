@@ -62,9 +62,9 @@ class Monitor():
         self.session = session = self.dm.Session()
         
         observer = Observer()
-        #!!!ATB do i need to call this multiple times?
         self.eventHandler = MonitorEventHandler(self)
-        observer.schedule(self.eventHandler, self.paths[0], recursive=True)
+        for path in self.paths:
+            observer.schedule(self.eventHandler, path, recursive=True)
         observer.start()
         
         while True:
