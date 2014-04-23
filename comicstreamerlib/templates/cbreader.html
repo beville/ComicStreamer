@@ -25,6 +25,8 @@
            pages.push('page/'+i);
         }
         
+        $.getJSON( 'page/0/bookmark')
+        
         book=new ComicBook('comic',pages ,
             {  
                 libPath: "{{ static_url('comicbook/js') }}", 
