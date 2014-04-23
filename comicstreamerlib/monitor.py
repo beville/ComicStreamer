@@ -431,9 +431,8 @@ class Monitor():
         filelist = filelist - db_pathlist
         db_pathlist = None
 
-        logging.debug(u"Monitor: {0} new files to inspect...".format(len(filelist)))
+        logging.debug(u"Monitor: {0} new files to scan...".format(len(filelist)))
 
-        logging.debug(u"Monitor: starting reading all metadata")
         md_list = []
         self.read_count = 0
         for filename in filelist:
@@ -449,7 +448,7 @@ class Monitor():
 
         self.saveChildInfoToDB(md_list)
 
-        logging.debug(u"Monitor: finish adding child sets")
+        #logging.debug(u"Monitor: finish adding child sets")
 
         # create dictionarys of all those objects, so we don't have to query the database 
         self.createChildDicts()
