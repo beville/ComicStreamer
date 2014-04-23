@@ -7,6 +7,7 @@ import tornado.web
 
 from sqlalchemy import desc
 from sqlalchemy.orm import joinedload,subqueryload,aliased
+from  sqlalchemy.sql.expression import func, select
 
 import json
 import pprint
@@ -371,6 +372,24 @@ class ComicAPIHandler(JSONResultAPIHandler):
         self.setContentType()
         self.write(resultSetToJson(result, "comics"))
 
+class ComicBookmarkAPIHandler(JSONResultAPIHandler):
+    def get(self, comic_id, pagenum):
+        
+        response = { 'status': -1 }
+        
+        session = self.application.dm.Session()
+        obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
+        if obj is not None:
+            if int(pagenum) < obj.page_count:
+                obj.lastread_ts = datetime.utcnow()
+                obj.lastread_page = int(pagenum)
+                session.commit()   
+                print "Bookmarking Comic {0}, page {1} at {2}".format( comic_id, pagenum, obj.lastread_ts)
+                response['status'] = 0
+                
+        self.setContentType()
+        self.write(response)
+        
 class ComicPageAPIHandler(ImageAPIHandler):
     def get(self, comic_id, pagenum):
         
@@ -621,8 +640,8 @@ class MainHandler(BaseHandler):
             roles_query = session.query(Role.name)
             roles_list = [i[0] for i in list(roles_query)]
 
-            random_id = random.randint(1, stats['total'])
-            random_comic = session.query(Comic).filter(Comic.id == random_id).first()
+            # SQLite specific random call
+            random_comic = session.query(Comic).order_by(func.random()).first()
             
             self.render("index.html", stats=stats,
                         random_comic=random_comic,
@@ -675,6 +694,7 @@ class APIServer(tornado.web.Application):
             (r"/deleted", DeletedAPIHandler),
             (r"/comic/([0-9]+)", ComicAPIHandler),
             (r"/comiclist", ComicListAPIHandler),
+            (r"/comic/([0-9]+)/page/([0-9]+)/bookmark", ComicBookmarkAPIHandler ),
             (r"/comic/([0-9]+)/page/([0-9]+)", ComicPageAPIHandler ),
             (r"/comic/([0-9]+)/thumbnail", ThumbnailAPIHandler),
             (r"/comic/([0-9]+)/file", FileAPIHandler),
