@@ -18,6 +18,8 @@ import dateutil.parser
 import logging
 import imghdr
 import random
+import signal
+import sys
 
 from comictaggerlib.comicarchive import *
 
@@ -27,6 +29,7 @@ from database import *
 from monitor import Monitor
 from config import ComicStreamerConfig
 from options import Options
+
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -97,11 +100,10 @@ class JSONResultAPIHandler(BaseHandler):
                     role = credit_info[1]
 
         if hasValue(person):
-            #cred_alias = aliased(Credit)
-            #query = query.join(cred_alias,Credit).filter(Comic.id == Credit.comic_id).join(Person).filter(Person.id == Credit.person_id).filter(Person.name.ilike(person.replace("*","%")))
-            #if role is not None:
-            #    query = query.join(Role).filter(Role.name.ilike(role.replace("*","%")))
-            query = query.filter( Comic.persons.contains(unicode(person).replace("*","%") ))
+            query = query.join(Credit).filter(Person.name.ilike(person.replace("*","%"))).filter(Credit.person_id==Person.id)
+            if role is not None:
+                query = query.filter(Credit.role_id==Role.id).filter(Role.name.ilike(role.replace("*","%")))
+            #query = query.filter( Comic.persons.contains(unicode(person).replace("*","%") ))
         
         # now winnow it down with other searches
         if hasValue(series_filter):
@@ -625,6 +627,7 @@ class APIServer(tornado.web.Application):
         
         self.config = config
         port = self.config['general']['port']
+        signal.signal(signal.SIGINT, self.signal_handler)
         
         if len(self.config['general']['folder_list']) == 0:
             logging.error("No folders on either command-line or config file.  Quitting.")
@@ -683,7 +686,25 @@ class APIServer(tornado.web.Application):
             self.monitor.start()
             self.monitor.scan()
 
+    def signal_handler(self, signal, frame):
 
+        MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 1
+
+        #self.stop()
+     
+        logging.info('Will shutdown ComicStreamer in %s seconds ...', MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
+        io_loop = tornado.ioloop.IOLoop.instance()
+     
+        deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN
+     
+        def stop_loop():
+            now = time.time()
+            if now < deadline and (io_loop._callbacks or io_loop._timeouts):
+                io_loop.add_timeout(now + 1, stop_loop)
+            else:
+                io_loop.stop()
+                logging.info('Shutdown')
+        stop_loop()
 
 def main():
         
