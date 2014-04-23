@@ -254,8 +254,8 @@
         options.url = utility.refreshQueryString(window.location.href, {}, this.settings);
       }
       if (this.settings.dataset.ajaxCache !== null) { options.cache = this.settings.dataset.ajaxCache; }
-
-      //!!!ATB - personal hack for sorting with comicstreamer
+      //--------------------------------------------------
+      //!!!ATB - personal hack for sorting and searching with comicstreamer
       if ("sorts" in options.data)
       {
         name = Object.keys(options.data.sorts)[0];
@@ -266,6 +266,22 @@
         }
         options.data.order = desc+name;
       }
+      if ("queries" in options.data)
+      {
+        for (var key in options.data.queries) {
+          if (options.data.queries.hasOwnProperty(key))
+          {
+            newkey = key;
+            if (key == 'search')
+            {
+              newkey = 'keyphrase';
+            }
+            // move the item from queries up one level
+            options.data[newkey] = options.data.queries[key];
+          }
+        }        
+      }
+      //--------------------------------------------------
       
       $.ajax(options);
     } else {

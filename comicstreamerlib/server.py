@@ -73,6 +73,7 @@ class JSONResultAPIHandler(BaseHandler):
         def hasValue(obj):
             return obj is not None and obj != ""
         
+        keyphrase_filter = self.get_argument(u"keyphrase", default=None)
         series_filter = self.get_argument(u"series", default=None)
         filename_filter = self.get_argument(u"path", default=None)
         title_filter = self.get_argument(u"title", default=None)
@@ -105,7 +106,21 @@ class JSONResultAPIHandler(BaseHandler):
                 query = query.filter(Credit.role_id==Role.id).filter(Role.name.ilike(role.replace("*","%")))
             #query = query.filter( Comic.persons.contains(unicode(person).replace("*","%") ))
         
-        # now winnow it down with other searches
+        if hasValue(keyphrase_filter):
+            keyphrase_filter = unicode(keyphrase_filter).replace("*","%")
+            keyphrase_filter = "%" + keyphrase_filter + "%"
+            query = query.filter( Comic.series.ilike(keyphrase_filter) 
+                                | Comic.title.ilike(keyphrase_filter)
+                                | Comic.publisher.ilike(keyphrase_filter)
+                                | Comic.path.ilike(keyphrase_filter)
+                                | Comic.comments.ilike(keyphrase_filter)
+                                #| Comic.characters.contains(keyphrase_filter)
+                                #| Comic.teams.contains(keyphrase_filter)
+                                #| Comic.locations.contains(keyphrase_filter)
+                                #| Comic.storyarcs.contains(keyphrase_filter)
+                                #| Comic.persons.contains(keyphrase_filter)
+                            )
+
         if hasValue(series_filter):
             query = query.filter( Comic.series.ilike(unicode(series_filter).replace("*","%") ))
         if hasValue(title_filter):
