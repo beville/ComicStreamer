@@ -42,7 +42,10 @@
         args:
             max_height
                 - will resize image
-    
+                
+/comic/{id}/page/{pagenum}/bookmark
+    - sets the last comic last read page and time in the database
+            
 /comic/{id}/thumbnail
     - return specific small cover image of specific comic
 
@@ -74,6 +77,9 @@
                     filter by publisher (wildcard accepted)
                 credit
                     filter by creator credit (wildcard accepted)
+                    should be a name optionally followed by a ":" and the role. e.g:
+                        credit=Brian*Vaughn
+                        credit=*Buscema:inker
                 start_date
                     the beginning publication date of the resultset    
                 end_date
