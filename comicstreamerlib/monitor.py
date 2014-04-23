@@ -3,6 +3,8 @@
 import sys
 import os
 import hashlib
+import md5
+import mmap
 import datetime
 import time
 import threading
@@ -166,7 +168,15 @@ class Monitor():
                 
             md.path = ca.path 
             md.page_count = ca.page_count
-            md.mod_ts = datetime.utcfromtimestamp(os.path.getmtime(ca.path))            
+            md.mod_ts = datetime.utcfromtimestamp(os.path.getmtime(ca.path))
+            md.filesize = os.path.getsize(md.path)
+            md.hash = ""
+            
+            #logging.debug("before hash")
+            #md5 = hashlib.md5()
+            #md5.update(open(md.path, 'r').read())
+            #md.hash = unicode(md5.hexdigest())
+            #logging.debug("after hash")
             
             return md
         return None
@@ -198,6 +208,8 @@ class Monitor():
         comic.path = md.path 
         comic.page_count = md.page_count
         comic.mod_ts = md.mod_ts
+        comic.hash = md.hash
+        comic.filesize = md.filesize
         
         if not md.isEmpty:
             if md.series is not None:
@@ -329,7 +341,7 @@ class Monitor():
             q = self.session.query(cls.name)
             existing_set = set([i[0] for i in list(q)])
             nameset = nameset - existing_set
-            print "new {0} size = {1}".format( cls, len(nameset ))
+            #logging.debug( "new {0} size = {1}".format( cls, len(nameset )))
             for n in nameset:
                 obj = cls(name=n)
                 #print cls, n

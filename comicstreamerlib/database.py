@@ -151,6 +151,12 @@ class Comic(Base):
     genre = Column(String)
     imprint = Column(String)
     weblink = Column(String)
+    filesize = Column(Integer)
+    hash = Column(String)
+    deleted_ts = Column(DateTime)
+    lastread_ts = Column(DateTime)
+    lastread_page = Column(Integer)
+    
     
     #hash = Column(String)
     added_ts = Column(DateTime, default=datetime.utcnow)  # when the comic was added to the DB
