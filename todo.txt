@@ -1,20 +1,21 @@
 Priority
-
-   bug: per_page setting slice off child lists...??
-      
+   watchdog on multiple folders
+   Delete vs. mark_as_delete
+   add genre entity list
+   set last read time and page
+   
 ----------------
 Database:
-   Versioning scheme?? (migrate or rebuild with change?)
+   Delete vs. mark_as_delete
+   Versioning scheme?? (migrate or rebuild with each change?)
    genre as a list??
-   Weird error at startup
-   Turn off "credits" string popping up!
-   cascade delete issue
-   add comic size (in Mb) to DB
-   
+   bug: per_page setting slice off child lists...?? (mitigated by ordering)
 ----------------
 General Server
    low priority:  MDNS/bonjour
    loading strategies: http://docs.sqlalchemy.org/en/rel_0_7/orm/loading.html
+   For shutdown, maybe have a mutex for mod operations to avoid corruption (maybe not needed??)
+   random comic link needs to take into account sparse table (deleted items)
 
 API
 
@@ -24,7 +25,6 @@ API
    search with OR in field
    searching
       look into more broad search terms
-      genre (is it a list?)
 
 ------------------
 ENTITY API
@@ -36,14 +36,14 @@ Add bookmark parameter to page handler so clients can mark pages?
 
 
 Web UI
-      -- random comic link
       -- recently read, with bookmarks
-      "date added" to popup? 
-   
-   
+      "date added" to popup?
+	  tags in popup
+	  scrolling in popup
    
 Monitor
   watchdog on multiple folders
+  watchdog doesn't trigger on move out of watched area
    
    
 OS Integration:
@@ -52,7 +52,7 @@ OS Integration:
       Windows, status box icon and menu
    Linux init script to run as server
    
-   Look into SABZBd implementation
+   Look into SABZBd/couch potato implementation
 
 ------------------------
 Authentication!!
@@ -93,10 +93,18 @@ import code; code.interact(local=locals())  ####ATB Debug
       
 c=s.query(Comic).join(Credit).join(Role).join(Person).filter(Role.name=="penciller").filter(Person.name=="Jeff Lemire")
 
+s.query(Comic).join(Credit).join(Person).filter(Person.name=='Jeff Lemire').filter(Credit.person_id==Person.id).filter(Credit.role_id==Role.id).filter(Role.name=='writer')
+
+person='Jeff Lemire'
+role='penciller'
+q = s.query(Comic)
+q = q.join(Credit).filter(Person.name==person).filter(Credit.person_id==Person.id)
+q = q.filter(Credit.role_id==Role.id).filter(Role.name==role)
+q.count()
 
 --------------------
---dyntable hack -just before $.ajax() call
-      //!!!ATB - personal hack for sorting with comicstreamer
+      //--------------------------------------------------
+      //!!!ATB - personal hack for sorting and searching with comicstreamer
       if ("sorts" in options.data)
       {
         name = Object.keys(options.data.sorts)[0];
@@ -107,5 +115,20 @@ c=s.query(Comic).join(Credit).join(Role).join(Person).filter(Role.name=="pencill
         }
         options.data.order = desc+name;
       }
-      
+      if ("queries" in options.data)
+      {
+        for (var key in options.data.queries) {
+          if (options.data.queries.hasOwnProperty(key))
+          {
+            newkey = key;
+            if (key == 'search')
+            {
+              newkey = 'keyphrase';
+            }
+            // move the item from queries up one level
+            options.data[newkey] = options.data.queries[key];
+          }
+        }        
+      }
+      //--------------------------------------------------
       $.ajax(options);
