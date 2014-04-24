@@ -1628,7 +1628,8 @@ var ComicBook = (function ($) {
         toggleLayout: 76
       },
       libPath: '/lib/',
-      forward_buffer: 3
+      forward_buffer: 3,
+      pageTurnCallback: false,
     };
 
     this.isMobile = false;
@@ -2190,6 +2191,9 @@ var ComicBook = (function ($) {
       if (pointer + 1 < pages.length) {
         pointer += (options.displayMode === 'single' || is_double_page_spread) ? 1 : 2;
         try {
+          if (options.pageTurnCallback) {
+            options.pageTurnCallback(pointer+1)
+          }            
           self.drawPage();
         } catch (e) {}
       }
@@ -2216,6 +2220,9 @@ var ComicBook = (function ($) {
       is_double_page_spread = (page.width > page.height); // need to run double page check again here as we are going backwards
 
       if (pointer > 0) {
+        if (options.pageTurnCallback) {
+          options.pageTurnCallback(pointer)
+        }           
         pointer -= (options.displayMode === 'single' || is_double_page_spread) ? 1 : 2;
         self.drawPage();
       }
