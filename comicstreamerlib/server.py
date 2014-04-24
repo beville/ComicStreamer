@@ -82,6 +82,7 @@ class JSONResultAPIHandler(BaseHandler):
         end_filter = self.get_argument(u"end_date", default=None)
         added_since = self.get_argument(u"added_since", default=None)
         modified_since = self.get_argument(u"modified_since", default=None)
+        lastread_since = self.get_argument(u"lastread_since", default=None)
         order = self.get_argument(u"order", default=None)
         character = self.get_argument(u"character", default=None)
         team = self.get_argument(u"team", default=None)
@@ -176,6 +177,13 @@ class JSONResultAPIHandler(BaseHandler):
             except:
                 pass
         
+        if hasValue(lastread_since):
+            try:
+                dt=dateutil.parser.parse(lastread_since)
+                query = query.filter( Comic.lastread_ts >= dt, Comic.lastread_ts != "" )
+            except:
+                pass
+        
         order_key = None
         # ATB temp hack to cover "slicing" bug where
         # if no order specified, the child collections
@@ -197,6 +205,8 @@ class JSONResultAPIHandler(BaseHandler):
                 order_key = Comic.mod_ts
             elif order == "added":
                 order_key = Comic.added_ts
+            elif order == "lastread":
+                order_key = Comic.lastread_ts
             elif order == "volume":
                 order_key = Comic.volume
             elif order == "issue":

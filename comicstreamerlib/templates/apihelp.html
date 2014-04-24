@@ -86,7 +86,9 @@
                 end_date
                     the end publication date of the resultset
                 added_since
-                    filter comics added the to database since given date    
+                    only comics added the to database since given date    
+                lastread_since
+                    only comics that have been read since given date    
                 per_page
                     max amount of results to be returned
                 offset
@@ -94,7 +96,7 @@
                 order
                     order by given key.  if key has "-" prepended, order descending
                     available sort keys:
-                        series, title, volume, issue, publisher, path, modified, added, date
+                        series, title, volume, issue, publisher, path, modified, added, lastread, date
             
             wildcard character is * (asterisk)
             
