@@ -609,8 +609,12 @@ class ReaderHandler(BaseHandler):
                 title = obj.series + u" #" + obj.issue
                 if obj.title is not None :
                     title +=  u" -- " + obj.title
+            if obj.lastread_page is None:
+                target_page = 0
+            else:
+                target_page=obj.lastread_page   
                 
-            self.render("cbreader.html", title=title, id=comic_id, count=obj.page_count)
+            self.render("cbreader.html", title=title, id=comic_id, count=obj.page_count, page=target_page)
             
         def make_list(self, id, count):
             text = u""
