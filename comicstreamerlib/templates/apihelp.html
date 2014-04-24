@@ -44,7 +44,8 @@
                 - will resize image
                 
 /comic/{id}/page/{pagenum}/bookmark
-    - sets the last comic last read page and time in the database
+    - sets the time of last access and last page read for the comic.
+        client would fetch this for each page turn
             
 /comic/{id}/thumbnail
     - return specific small cover image of specific comic
