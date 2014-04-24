@@ -59,11 +59,11 @@
                 </div>
             </div>
             <br>          
-            <div id="main_recent">
+            <div class="main_recent">
                 <h3>Most Recent Additions</h3>
-                <div id="cover_list">
+                <div class="cover_list">
                 <ul>
-                    {% for comic in recent %}
+                    {% for comic in recently_added %}
                         {% block comic %}
                             <li>
                                 <a href="/comic/{{comic.id}}/reader" target="_blank">
@@ -76,6 +76,23 @@
                 </ul>
                 </div>
             </div>
+            <div class="main_recent">
+                <h3>Most Recently Read</h3>
+                <div class="cover_list">
+                <ul>
+                    {% for comic in recently_read %}
+                        {% block comic %}
+                            <li>
+                                <a href="/comic/{{comic.id}}/reader" target="_blank">
+                                   <img src="/comic/{{comic.id}}/thumbnail">
+                                   <span class="comic_caption">{{comic.series}} #{{comic.issue}}</span>
+                               </a>
+                            </li>    
+                        {% end %}
+                    {% end %}
+                </ul>
+                </div>
+            </div>            
             <br>
                 <div id="main_browse">
                     <h3>Entity Browser</h3>

@@ -177,7 +177,7 @@ ul.nav
 }
 
 
-#main_recent
+.main_recent
 {
     color:#000; background-color:#008B8B; 
     padding:4px;
@@ -185,35 +185,35 @@ ul.nav
     height: 320px;
 }
 
-#cover_list
+.cover_list
 {
     width:650px;
     margin:0px auto;
     overflow-y:hidden;
     float: left;
 }
-#cover_list ul
+.cover_list ul
 {
     margin:0;
     padding:0;
     display:table;
     list-style:none;
 }
-#cover_list li 
+.cover_list li 
 {
     padding:3px 3px;
     text-align:center;
     display:table-cell;
     vertical-align:middle;
 }
-#cover_list img
+.cover_list img
 {
     border:0;
     display:block;
     margin:0px auto;
 }
 
-#cover_list a
+.cover_list a
 {
     color: #000000;
     text-decoration: none;

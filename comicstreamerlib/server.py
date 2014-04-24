@@ -639,7 +639,8 @@ class MainHandler(BaseHandler):
             stats['series'] = len(set(session.query(Comic.series)))
             stats['persons'] = session.query(Person).count()
             
-            recent_comics = session.query(Comic).order_by(Comic.added_ts.desc()).limit(10)
+            recently_added_comics = session.query(Comic).order_by(Comic.added_ts.desc()).limit(10)
+            recently_read_comics = session.query(Comic).filter(Comic.lastread_ts != "").order_by(Comic.lastread_ts.desc()).limit(10)
             
             roles_query = session.query(Role.name)
             roles_list = [i[0] for i in list(roles_query)]
@@ -649,7 +650,8 @@ class MainHandler(BaseHandler):
             
             self.render("index.html", stats=stats,
                         random_comic=random_comic,
-                        recent = list(recent_comics),
+                        recently_added = list(recently_added_comics),
+                        recently_read = list(recently_read_comics),
                         roles = roles_list)
 
 class GenericPageHandler(BaseHandler):
