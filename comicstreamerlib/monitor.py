@@ -453,6 +453,9 @@ class Monitor():
         # create dictionarys of all those objects, so we don't have to query the database 
         self.createChildDicts()
         
+        #sort the list to the last modified file goes in last
+        md_list = sorted(md_list, key=lambda md: md.mod_ts)
+
         for md  in md_list:
             self.addComicFromMetadata( md )
 
