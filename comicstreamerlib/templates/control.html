@@ -9,30 +9,104 @@
         
         <title>ComicStreamer - Control</title>
         
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        <link rel="stylesheet" href="{{static_url('jquery/jquery-ui-1.10.4.custom/css/flick/jquery-ui-1.10.4.custom.min.css')}}">
         
         <style type="text/css">
-            @import "{{ static_url('comicstreamer.css') }}";    
+            /*@import "https://jqueryui.com/jquery-wp-content/themes/jqueryui.com/style.css";*/
+            @import "{{ static_url('comicstreamer.css') }}";
+            .ctrl_button {
+               border-top: 1px solid #96d1f8;
+               background: #65a9d7;
+               background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));
+               background: -webkit-linear-gradient(top, #3e779d, #65a9d7);
+               background: -moz-linear-gradient(top, #3e779d, #65a9d7);
+               background: -ms-linear-gradient(top, #3e779d, #65a9d7);
+               background: -o-linear-gradient(top, #3e779d, #65a9d7);
+               padding: 8.5px 17px;
+               margin: 10px;
+               -webkit-border-radius: 6px;
+               -moz-border-radius: 6px;
+               border-radius: 6px;
+               -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+               -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+               box-shadow: rgba(0,0,0,1) 0 1px 0;
+               text-shadow: rgba(0,0,0,.4) 0 1px 0;
+               color: white;
+               font-size: 16px;
+               font-family: 'Lucida Grande', Helvetica, Arial, Sans-Serif;
+               text-decoration: none;
+               vertical-align: middle;
+               width: 200px;
+               }
+            .ctrl_button:hover {
+               border-top-color: #28597a;
+               background: #28597a;
+               color: #ccc;
+               }
+            .ctrl_button:active {
+               border-top-color: #1b435e;
+               background: #1b435e;
+               }            
         </style>
+
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+        
+        <script type="text/javascript" charset="utf-8">
+        
+            function sendCmd(cmd)
+            {
+                $( "#dialog-"+cmd ).dialog({
+                      resizable: false,
+                      height:180,
+                      width:350,
+                      modal: true,
+                      buttons: {
+                        "OK": function() {
+                          $( this ).dialog( "close" );
+                          $.getJSON( '/control?cmd='+cmd);	
+                        },
+                        Cancel: function() {
+                          $( this ).dialog( "close" );
+                        }
+                      }
+                    });                
+                
+            }
+                        
+        </script>        
        
     </head>
     <body>
         <div id="header"><h2>ComicStreamer - Control</h2></div>
               
         <div id=content>
-            <div id="tbd">
-                TBD:
-                <li>Full rescan</li>
-                <li>Restart server</li>
-                <li>Stop server</li>
+            <div>
+                <button type="button" class="ctrl_button" onclick="sendCmd('restart')">Restart</button>                
             </div>
+            <div>
+                <button type="button" class="ctrl_button" onclick="sendCmd('reset')">Rebuild Database</button>                
+            </div>
+            <div>
+                <button type="button" class="ctrl_button" onclick="sendCmd('stop')">Shutdown</button>                
+            </div>
+            
             <br>
         </div>
-        
+    
         <div id=navigation>
             {% include menu.html %}
         </div>
-       
+        
+    <div id="dialog-restart" title="Restart ComicStreamer?" style="display:none">
+      <p><span class="hidden" style="float:left; margin:0 7px 20px 0;"></span>Are you sure you want to restart ComicStreamer?</p>
+    </div>          
+    <div id="dialog-reset" title="Rebuild Comic Database?" style="display:none">
+      <p><span style="float:left; margin:0 7px 20px 0;"></span>If you have a large library, this may take a while. Are you sure?</p>
+    </div>          
+    <div id="dialog-stop" title="Stop ComicStreamer?" style="display:none">
+      <p><span style="float:left; margin:0 7px 20px 0;"></span>Are you sure you want to stop ComicStreamer?</p>
+    </div>          
     </body>
 </html>
 
