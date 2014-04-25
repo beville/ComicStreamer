@@ -69,7 +69,10 @@ class ComicStreamerConfig(ConfigObj):
 
     def __init__(self):
         super(ComicStreamerConfig, self).__init__()
-                
+               
+        encoding="UTF8"
+        default_encoding="UTF8"
+        
         self.csfolder = ComicStreamerConfig.getUserFolder()
 
         if not os.path.exists( self.csfolder ):
@@ -84,6 +87,7 @@ class ComicStreamerConfig(ConfigObj):
         else:
             tmp = ConfigObj(self.filename)
             self.merge(tmp)
+            self['general']['folder_list'] = [os.path.abspath(os.path.normpath(unicode(a))) for a in self['general']['folder_list']]
             
     def applyOptions( self, opts ):
 
@@ -94,7 +98,7 @@ class ComicStreamerConfig(ConfigObj):
             modified = True
 
         if opts.folder_list is not None:
-            self['general']['folder_list'] = opts.folder_list
+            self['general']['folder_list'] = [os.path.abspath(os.path.normpath(unicode(a))) for a in opts.folder_list]
             modified = True
 
         if modified:

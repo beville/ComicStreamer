@@ -101,6 +101,9 @@ for comics to add to the database (persisted)
                 print "Distributed under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)"
                 sys.exit(0)
                 
+        filename_encoding = sys.getfilesystemencoding()
         if len(args) > 0:
-            self.folder_list = args
+            #self.folder_list = [os.path.normpath(a.decode(filename_encoding)) for a in args]
+            self.folder_list = [os.path.abspath(os.path.normpath(unicode(a.decode(filename_encoding)))) for a in args]
+        print "folderlist in parser:", self.folder_list
         
