@@ -2,9 +2,6 @@
 <html>
     <head>
         <meta charset="utf8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black">
         <link rel="icon" href="/favicon.ico" />	      
         
         <title>ComicStreamer - Config</title>
@@ -12,18 +9,120 @@
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
         
         <style type="text/css">
-            @import "{{ static_url('comicstreamer.css') }}";    
+            @import "{{ static_url('comicstreamer.css') }}";
+            
+            form    {
+                /*
+                background: -webkit-gradient(linear, bottom, left 175px, from(#CCCCCC), to(#EEEEEE));
+                background: -moz-linear-gradient(bottom, #CCCCCC, #EEEEEE 175px);
+                */
+                /*margin:auto;*/
+                position:relative;
+                width:550px;
+                height:450px;
+                /*font-family: Tahoma, Geneva, sans-serif;*/
+                font-size: 14px;
+                font-style: italic;
+                line-height: 24px;
+                font-weight: bold;
+                color: #09C;
+                text-decoration: none;
+                -webkit-border-radius: 10px;
+                -moz-border-radius: 10px;
+                border-radius: 10px;
+                padding:10px;
+            }
+            form .help   {
+                font-size: 12px;
+                font-weight: normal;
+                color: #555555;
+            }
+            form #statusbad   {
+                font-weight: normal;
+                color: #aa2222;
+            }              
+            form #statusgood   {
+                font-weight: normal;
+                color: #22aa22;
+            }              
+            input    {
+                width:375px;
+                display:block;
+                border: 1px solid #999;
+                height: 25px;
+                -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+                -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+                box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+            }
+            textarea#folders {
+                width:375px;
+                height:75px;
+            }
+            
+            textarea#folders {
+                display:block;
+            }
+            
+            input.button {
+                width:100px;
+                position:absolute;
+                right:20px;
+                bottom:20px;
+                background:#09C;
+                color:#fff;
+                font-family: Tahoma, Geneva, sans-serif;
+                height:30px;
+                -webkit-border-radius: 15px;
+                -moz-border-radius: 15px;
+                border-radius: 15px;
+                border: 1p solid #999;
+            }
+            input.button:hover {
+                background:#fff;
+                color:#09C;
+            }
+
+            textarea:focus, input:focus {
+                border: 1px solid #09C;
+            }
         </style>
-       
+        <script type="text/javascript" charset="utf-8">
+        
+            $(document).ready(
+                function()
+                {
+                    target_port={{port}};
+                    if (location.port != target_port) 
+                    {    
+                    //    location.port = target_port;
+                    }
+                }
+            );
+        </script>       
     </head>
     <body>
         <div id="header"><h2>ComicStreamer - Config</h2></div>
         
         <div id=content>
+            
+            <form action="configure" method="post">
+                <div>
+                    <label>
+                        <span>Port</span><input id="port" type="text" name="port" value="{{port}}" />
+                    </label>
+                    
+                    <label>
+                        <span>Folders</span> <span class="help">enter one folder per line</span><textarea id="folders" name="folders" >{{folders}}</textarea>
+                        <input type="submit" value="Save" />
+                    </label>
+                
+                </div>
+                <span id="statusbad">{{failure}}</span><span id="statusgood">{{success}}</span>
+            </form>
+            
             <div id="tbd">
                 TBD:
-                <li>settings (port, folders, etc)</li>
-                <li>Set web page passwords</li>
+                <li>Set web page user/password</li>
                 <li>Set API key</li>
             </div>
             <br>
