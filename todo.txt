@@ -1,51 +1,44 @@
 Priority
-   watchdog on multiple folders
-   Delete vs. mark_as_delete
+   log to file, view log view webpage
+   control:  cleanly rebuild DB -  causes thread error on rebuild
+   consolidate all jquery files, make sure all loads are local
    add genre entity list
-   set last read time and page
+   fix configobj unicode issues
+   test unicode user folder
    
+
 ----------------
 Database:
-   Delete vs. mark_as_delete
    Versioning scheme?? (migrate or rebuild with each change?)
    genre as a list??
-   bug: per_page setting slice off child lists...?? (mitigated by ordering)
+   bug: per_page setting slice off child lists...?? (mitigated by ordering
+   bug: possible cascade confusion on lots of deletes/adds
 ----------------
 General Server
    low priority:  MDNS/bonjour
-   loading strategies: http://docs.sqlalchemy.org/en/rel_0_7/orm/loading.html
+   more efficient queries (less joins, less selects)
    For shutdown, maybe have a mutex for mod operations to avoid corruption (maybe not needed??)
-   random comic link needs to take into account sparse table (deleted items)
+   Authentication!!
 
 API
-
    Versioning scheme!
    proper sorting by issue number (numeric, not string)
    selective fields
-   search with OR in field
-   searching
-      look into more broad search terms
+   search with OR / AND in field
 
 ------------------
 ENTITY API
       entity list:
 		 year? (or decade?)
 ---------------------------      
-  
-Add bookmark parameter to page handler so clients can mark pages?
-
-
 Web UI
-      -- recently read, with bookmarks
-      "date added" to popup?
 	  tags in popup
 	  scrolling in popup
-   
+      details popup: add filesize, last read date
+	  
 Monitor
-  watchdog on multiple folders
-  watchdog doesn't trigger on move out of watched area
-   
-   
+  watchdog doesn't trigger on file moving out of watched area
+    
 OS Integration:
    add minimal GUI front end for windows and mac
       Mac OS - icon and dropdown menu
@@ -54,10 +47,17 @@ OS Integration:
    
    Look into SABZBd/couch potato implementation
 
-------------------------
-Authentication!!
----------------------
+HTML READER feature requests
+   pass in metadata or HTML text/element for display via toolbar
+   keystrokes for zooming in/out
+   page turn callback function (for bookmark)
+   general touch/mobile interface
+   show page number and/or progress bar
 
+
+------------------------
+
+---------------------
 Requirements:
    tornado
    sqlalchemy > 0.9
