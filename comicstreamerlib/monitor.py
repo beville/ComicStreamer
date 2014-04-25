@@ -68,8 +68,11 @@ class Monitor():
         observer.start()
         
         while True:
-            (msg, args) = self.queue.get()
-            
+            try:
+                (msg, args) = self.queue.get(block=True, timeout=1)
+            except:
+                msg = None
+                
             #dispatch messages
             if msg == "scan":
                 self.dofullScan(self.paths)
@@ -77,12 +80,12 @@ class Monitor():
             if msg == "events":
                 self.doEventProcessing(args)
             
-            time.sleep(1)
-            
+            #time.sleep(1)
             if self.quit:
                 break
-
-        logging.debug("Monitor: started main loop.")
+            
+        observer.stop()
+        logging.debug("Monitor: stopped main loop.")
         
     def scan(self):
         self.queue.put(("scan", None))
@@ -121,15 +124,23 @@ class Monitor():
             
         self.mutex.release()
 
-        
 
-    def checkIfRemovedOrModified(self, comic):
+    def checkIfRemovedOrModified(self, comic, pathlist):
+        remove = False
+        
+        def inFolderlist(filepath, pathlist):
+            for p in pathlist:
+                if p in filepath:
+                    return True
+            return False
+        
         if not (os.path.exists(comic.path)):
             # file is missing, remove it from the comic table, add it to deleted table
-            print >>  sys.stdout, u"Removing {0} \n".format(comic.path),
-            self.removeComic(comic)
-            self.remove_count += 1
-            
+            print >>  sys.stdout, u"Removing missing {0} \n".format(comic.path),
+            remove = True
+        elif not inFolderlist(comic.path, pathlist):
+            print >>  sys.stdout, u"Removing unwanted {0} \n".format(comic.path),
+            remove = True
         else:
             # file exists.  check the mod date.
             # if it's been modified, remove it, and it'll be re-added
@@ -138,8 +149,11 @@ class Monitor():
             prev = comic.mod_ts
             if curr != prev:
                 print >>  sys.stdout, u"Removed modifed {0} \n".format(comic.path),
-                self.removeComic(comic)
-                self.remove_count += 1
+                remove = True
+           
+        if remove:
+            self.removeComic(comic)
+            self.remove_count += 1
 
     def getComicMetadata(self, path):
         
@@ -413,7 +427,7 @@ class Monitor():
         logging.debug(u"Monitor: Removing missing or modified files from DB...")
         #start_time = time.time()
         for comic in query:
-            self.checkIfRemovedOrModified( comic )
+            self.checkIfRemovedOrModified( comic, self.paths )
         #print time.time() - start_time, "seconds"
         logging.debug(u"Monitor: Done removing files.")
         
