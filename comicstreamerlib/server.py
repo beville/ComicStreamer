@@ -21,6 +21,7 @@ import imghdr
 import random
 import signal
 import sys
+import socket
 
 from comictaggerlib.comicarchive import *
 
@@ -243,6 +244,18 @@ class ZippableAPIHandler(JSONResultAPIHandler):
         else:
             self.write(json_data)       
 
+class ControlAPIHandler(GenericAPIHandler):
+    def get(self):
+        cmd = self.get_argument(u"cmd", default=None)
+        if cmd == "restart":
+            logging.info("Restart command")
+            utils.touch(self.application.restart_watch_file)
+        elif cmd == "reset":
+            logging.info("Rebuild DB command")
+            self.application.rescan()
+        elif cmd == "stop":
+            logging.info("Stop command")
+            self.application.shutdown()
 
 class ImageAPIHandler(GenericAPIHandler):
     def setContentType(self, image_data):
@@ -657,7 +670,9 @@ class MainHandler(BaseHandler):
 
             # SQLite specific random call
             random_comic = session.query(Comic).order_by(func.random()).first()
-            
+            if random_comic is None:
+                random_comic = type('fakecomic', (object,), 
+                 {'id':0, 'series':'Oops', 'issue':1})()
             self.render("index.html", stats=stats,
                         random_comic=random_comic,
                         recently_added = list(recently_added_comics),
@@ -671,17 +686,100 @@ class GenericPageHandler(BaseHandler):
 class AboutPageHandler(BaseHandler):
     def get(self):
             self.render("about.html", version=self.application.version)            
+     
+class ConfigPageHandler(BaseHandler):
+    
+    def is_port_available(self,port):    
+        host = '127.0.0.1'
+    
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect((host, port))
+            s.shutdown(2)
+            return False
+        except Exception as e:
+            print e
+            return True
+
+    def render_config(self, success="", failure=""):
+        folder_str = "\n".join(self.application.config['general']['folder_list'] )
+        self.render("configure.html",
+                    port=self.application.config['general']['port'],
+                    folders=folder_str,
+                    success=success,
+                    failure=failure)
+        
+    def get(self):
+        self.render_config()
+         
+    def post(self):
+        port_str = self.get_argument(u"port", default=None)
+        folders_str = self.get_argument(u"folders", default=None)
+        success_str="Saved. Server restart needed"
+        failure_str=""
+        failure = False
+        
+        old_folder_list = self.application.config['general']['folder_list']
+        new_folder_list = [os.path.abspath(os.path.normpath(unicode(a))) for a in folders_str.splitlines()]
+
+        for f in new_folder_list:
+            if not (os.path.exists(f) and  os.path.isdir(f)):
+                success_str = ""
+                failure_str = u"Folder {0} doesn't exist.  ".format(f)
+                failure = True
+                break
+                
+        if not failure:    
+            self.application.config['general']['folder_list'] = new_folder_list
+        
+        #TODO validate each folder exists
+        
+        old_port = int(self.application.config['general']['port'])
+        new_port = 0
+        if port_str is not None:
+            try:
+
+                new_port = int(port_str)
+                if new_port > 49151 or new_port < 1024:
+                    success_str = ""
+                    failure_str += u"Port value out of range (1024-4151): {0}".format(new_port)
+                    failure = True
+                else:
+                    if new_port != old_port and not self.is_port_available(new_port):
+                        success_str = ""
+                        failure_str += u"Port not available: {0}".format(new_port)
+                        failure = True
+                    else:    
+                        self.application.config['general']['port'] = new_port
+                #
+            except:
+                success_str = ""
+                failure_str += u"Non-numeric port value: {0}".format(port_str)
+                failure = True                
+                pass                
+    
+        if not failure:
+            
+            #if new_port !=old_port:
+            #    self.application.listen(new_port)
+            if new_port == old_port and new_folder_list == old_folder_list:
+                success_str = ""
+            else:
+                self.application.config.write()
+                
+        self.render_config(success=success_str, failure=failure_str)
             
 class APIServer(tornado.web.Application):
     def __init__(self, config, opts):
+        utils.fix_output_encoding()   
         
         self.config = config
         port = self.config['general']['port']
         signal.signal(signal.SIGINT, self.signal_handler)
         
-        if len(self.config['general']['folder_list']) == 0:
-            logging.error("No folders on either command-line or config file.  Quitting.")
-            sys.exit(-1)
+        #if len(self.config['general']['folder_list']) == 0:
+        #    logging.error("No folders on either command-line or config file.  Quitting.")
+        #    sys.exit(-1)
         
         logging.info( "Stream server running on port {0}...".format(port))
         self.dm = DataManager()
@@ -689,6 +787,7 @@ class APIServer(tornado.web.Application):
         if opts.reset:
             logging.info( "Deleting any existing database!")
             self.dm.delete()
+            opts.reset = False
             
         self.dm.create()
         
@@ -701,6 +800,7 @@ class APIServer(tornado.web.Application):
             (r"/", MainHandler),
             (r"/(.*)\.html", GenericPageHandler),
             (r"/about", AboutPageHandler),
+            (r"/configure", ConfigPageHandler),
             (r"/comiclist/browse", ComicListBrowserHandler),
             (r"/entities/browse/(.*)", EntitiesBrowserHandler),
             (r"/comic/([0-9]+)/reader", ReaderHandler),
@@ -715,6 +815,7 @@ class APIServer(tornado.web.Application):
             (r"/comic/([0-9]+)/thumbnail", ThumbnailAPIHandler),
             (r"/comic/([0-9]+)/file", FileAPIHandler),
             (r"/entities/(.*)", EntityAPIHandler),
+            (r"/control", ControlAPIHandler),
             (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': "favicon.ico"}),
             (r'/.*', UnknownHandler),
             
@@ -723,22 +824,34 @@ class APIServer(tornado.web.Application):
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
-             debug=True
+            debug=True,
+            autoreload=False
         )
-        
+                
         tornado.web.Application.__init__(self, handlers, **settings)
 
         if not opts.no_monitor:     
             logging.debug("Going to scan the following folders:")
             for l in self.config['general']['folder_list']:
-                logging.debug("   {0}".format(l))
+                logging.debug(u"   {0}".format(repr(l)))
 
             self.monitor = Monitor(self.dm, self.config['general']['folder_list'])
             self.monitor.start()
             self.monitor.scan()
 
-    def signal_handler(self, signal, frame):
+    def rescan(self):
+        self.monitor.stop()
+        self.dm.delete()
+        self.dm.create()
+        self.monitor = Monitor(self.dm, self.config['general']['folder_list'])
+        self.monitor.start()
+        self.monitor.scan()        
 
+    def signal_handler(self, signal, frame):
+        self.shutdown()
+        
+    def shutdown(self):
+        
         MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 1
 
         #self.stop()
@@ -775,9 +888,15 @@ def main():
     
     opts.parseCmdLineArgs()
     config.applyOptions(opts)
+    print config
     
     app = APIServer(config, opts)
 
+    # set up a file that will be watched a restart
+    app.restart_watch_file = os.path.join(ComicStreamerConfig.getUserFolder(), "restart")
+    utils.touch(app.restart_watch_file)
+    tornado.autoreload.watch(app.restart_watch_file)
+    
     tornado.ioloop.IOLoop.instance().start()
 
 
