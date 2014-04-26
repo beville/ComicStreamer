@@ -54,6 +54,18 @@
         
         <script type="text/javascript" charset="utf-8">
         
+            function redirect()
+            {
+                location.pathname = "/";
+            }
+            function do_cmd(cmd)
+            {
+                $.getJSON( '/control?cmd='+cmd);
+                if (cmd == 'stop')
+                {
+                    setTimeout(redirect, 2000);
+                }
+            }
             function sendCmd(cmd)
             {
                 $( "#dialog-"+cmd ).dialog({
@@ -61,17 +73,18 @@
                       height:180,
                       width:350,
                       modal: true,
+                      //draggable: false,
+                      position: { my: "top", at: "top", of: window },
                       buttons: {
                         "OK": function() {
                           $( this ).dialog( "close" );
-                          $.getJSON( '/control?cmd='+cmd);	
+                          do_cmd(cmd);	
                         },
                         Cancel: function() {
                           $( this ).dialog( "close" );
                         }
                       }
-                    });                
-                
+                    });
             }
                         
         </script>        
