@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <link rel="icon" href="/favicon.ico" />	      
+        
+        <title>ComicStreamer - Logs</title>
+        
+        
+        <style type="text/css">
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>
+       
+    </head>
+    <body>
+        <div id="header"><h2>ComicStreamer - Logs</h2></div>
+              
+        <div id=content>
+            <pre>
+{{logtxt}}
+            </pre>
+        </div>
+    
+        <div id=navigation>
+            {% include menu.html %}
+        </div>
+        
+      
+    </body>
+</html>
+
