@@ -250,8 +250,7 @@ class ControlAPIHandler(GenericAPIHandler):
         cmd = self.get_argument(u"cmd", default=None)
         if cmd == "restart":
             logging.info("Restart command")
-            python = sys.executable
-            os.execl(python, python, * sys.argv)
+            self.application.restart()
         elif cmd == "reset":
             logging.info("Rebuild DB command")
             self.application.rescan()
@@ -840,7 +839,7 @@ class APIServer(tornado.web.Application):
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
-            debug=True,
+            debug=False,
             autoreload=False
         )
                 
@@ -855,14 +854,22 @@ class APIServer(tornado.web.Application):
             self.monitor.start()
             self.monitor.scan()
 
+    def restart(self):
+        python = sys.executable
+        os.execl(python, python, * sys.argv)    
+
     def rescan(self):
+        self.dm.delete()
+        self.restart()
+        """
         self.monitor.stop()
         self.dm.delete()
         self.dm.create()
         self.monitor = Monitor(self.dm, self.config['general']['folder_list'])
         self.monitor.start()
         self.monitor.scan()        
-
+        """
+        
     def signal_handler(self, signal, frame):
         self.shutdown()
         
