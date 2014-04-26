@@ -64,7 +64,8 @@ class Monitor():
         observer = Observer()
         self.eventHandler = MonitorEventHandler(self)
         for path in self.paths:
-            observer.schedule(self.eventHandler, path, recursive=True)
+            if os.path.exists(path):
+                observer.schedule(self.eventHandler, path, recursive=True)
         observer.start()
         
         while True:
@@ -136,10 +137,10 @@ class Monitor():
         
         if not (os.path.exists(comic.path)):
             # file is missing, remove it from the comic table, add it to deleted table
-            print >>  sys.stdout, u"Removing missing {0} \n".format(comic.path),
+            logging.debug(u"Removing missing {0}".format(comic.path))
             remove = True
         elif not inFolderlist(comic.path, pathlist):
-            print >>  sys.stdout, u"Removing unwanted {0} \n".format(comic.path),
+            logging.debug(u"Removing unwanted {0}".format(comic.path))
             remove = True
         else:
             # file exists.  check the mod date.
@@ -148,7 +149,7 @@ class Monitor():
             curr = datetime.utcfromtimestamp(os.path.getmtime(comic.path))
             prev = comic.mod_ts
             if curr != prev:
-                print >>  sys.stdout, u"Removed modifed {0} \n".format(comic.path),
+                logging.debug(u"Removed modifed {0}".format(comic.path))
                 remove = True
            
         if remove:
@@ -163,7 +164,7 @@ class Monitor():
         
         if ca.seemsToBeAComicArchive():
             #print >>  sys.stdout, u"Adding {0}...     \r".format(count),
-            print >>  sys.stdout, u"Reading in {0} {1: <120}\r".format(self.read_count, path),
+            logging.debug(u"Reading in {0} {1: <120}\r".format(self.read_count, path))
             sys.stdout.flush()
             self.read_count += 1
 
@@ -213,7 +214,7 @@ class Monitor():
         return obj
 
     def addComicFromMetadata(self, md ):
-        print >>  sys.stdout, u"Adding {0} {1: <120}\r".format(self.add_count, md.path),
+        logging.debug(u"Adding {0} {1: <120}\r".format(self.add_count, md.path))
         sys.stdout.flush()
     
         self.add_count += 1
