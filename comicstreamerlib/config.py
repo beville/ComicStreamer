@@ -23,6 +23,7 @@ import sys
 import platform
 import codecs
 import uuid
+import logging
 
 from configobj import ConfigObj
 
@@ -35,6 +36,8 @@ class ComicStreamerConfig(ConfigObj):
         filename_encoding = sys.getfilesystemencoding()
         if platform.system() == "Windows":
             folder = os.path.join( os.environ['APPDATA'], 'ComicStreamer' )
+        if platform.system() == "Darwin":
+            folder = os.path.join( os.path.expanduser('~') , 'Library/Application Support/ComicStreamer')
         else:
             folder = os.path.join( os.path.expanduser('~') , '.ComicStreamer')
         if folder is not None:
@@ -63,6 +66,8 @@ class ComicStreamerConfig(ConfigObj):
             'port': 8888,
             'install_id' : uuid.uuid4().hex,
             'folder_list': [],
+            'debug': False,
+            'loglevel': logging.INFO,
         }
 
         self['general'] = general

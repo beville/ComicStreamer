@@ -35,10 +35,11 @@ Just unzip somewhere.
 
 (Eventually, there will be native build packages for Mac OS and Windows)
 
-Settings and database are kept in user folder:
+Settings, database, and logs are kept in the user folder:
 
-* On unix (mac,linux) it's "~/.ComicStreamer"
-* On windows "%APPDATA%\ComicStreamer"
+* On Linux: "~/.ComicStreamer"
+* On Mac OS: "~/Library/Application Support/ComicStreamer"
+* On Windows:  "%APPDATA%\ComicStreamer"
 
 ----------
 #### Running
