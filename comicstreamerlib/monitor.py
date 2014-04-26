@@ -164,7 +164,7 @@ class Monitor():
         
         if ca.seemsToBeAComicArchive():
             #print >>  sys.stdout, u"Adding {0}...     \r".format(count),
-            logging.debug(u"Reading in {0} {1: <120}\r".format(self.read_count, path))
+            logging.debug(u"Reading in {0} {1}\r".format(self.read_count, path))
             sys.stdout.flush()
             self.read_count += 1
 
@@ -214,7 +214,7 @@ class Monitor():
         return obj
 
     def addComicFromMetadata(self, md ):
-        logging.debug(u"Adding {0} {1: <120}\r".format(self.add_count, md.path))
+        logging.debug(u"Adding {0} {1}\r".format(self.add_count, md.path))
         sys.stdout.flush()
     
         self.add_count += 1
@@ -446,7 +446,7 @@ class Monitor():
         filelist = filelist - db_pathlist
         db_pathlist = None
 
-        logging.debug(u"Monitor: {0} new files to scan...".format(len(filelist)))
+        logging.info(u"Monitor: {0} new files to scan...".format(len(filelist)))
 
         md_list = []
         self.read_count = 0
@@ -454,7 +454,10 @@ class Monitor():
             md = self.getComicMetadata( filename )
             if md is not None:
                 md_list.append(md)
-        logging.debug(u"Monitor: finished reading all metadata")
+            if self.read_count % 100 == 0:
+                logging.info(u"Monitor: {0} of {1} scanned...".format(self.read_count,len(filelist)))
+                
+        logging.info(u"Monitor: finished scanning metadata in all {0} files".format(len(filelist)))
         
         filelist = None
         
@@ -477,6 +480,7 @@ class Monitor():
             # periodically commit   
             if self.add_count % 1000 == 0:
                 self.session.commit()
+                logging.info(u"Monitor: {0} of {1} added...".format(self.add_count,len(md_list)))
                 
         if self.add_count > 0:  
             self.session.commit()
