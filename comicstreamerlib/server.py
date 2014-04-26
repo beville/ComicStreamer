@@ -17,6 +17,7 @@ import StringIO
 import gzip
 import dateutil.parser
 import logging
+import logging.handlers
 import imghdr
 import random
 import signal
@@ -249,7 +250,8 @@ class ControlAPIHandler(GenericAPIHandler):
         cmd = self.get_argument(u"cmd", default=None)
         if cmd == "restart":
             logging.info("Restart command")
-            utils.touch(self.application.restart_watch_file)
+            python = sys.executable
+            os.execl(python, python, * sys.argv)
         elif cmd == "reset":
             logging.info("Rebuild DB command")
             self.application.rescan()
@@ -320,7 +322,7 @@ class ComicListAPIHandler(ZippableAPIHandler):
         query = self.processComicQueryArgs(query)
         query, total_results = self.processPagingArgs(query)
         
-        print "-------->", query
+        #print "-------->", query
         
         #import code; code.interact(local=locals())
         logging.debug( "before query" )
@@ -407,7 +409,6 @@ class ComicBookmarkAPIHandler(JSONResultAPIHandler):
                 obj.lastread_ts = datetime.utcnow()
                 obj.lastread_page = int(pagenum)
                 session.commit()   
-                print "Bookmarking Comic {0}, page {1} at {2}".format( comic_id, pagenum, obj.lastread_ts)
                 response['status'] = 0
                 
         self.setContentType()
@@ -686,6 +687,20 @@ class GenericPageHandler(BaseHandler):
 class AboutPageHandler(BaseHandler):
     def get(self):
             self.render("about.html", version=self.application.version)            
+
+
+class LogPageHandler(BaseHandler):
+    
+    def get(self):
+
+        log_file = os.path.join(ComicStreamerConfig.getUserFolder(), "logs", "ComicStreamer.log")
+        
+        logtxt = ""
+        for line in reversed(open(log_file).readlines()):
+            logtxt += line.rstrip() + '\n'
+
+        self.render("log.html",
+                    logtxt=logtxt)
      
 class ConfigPageHandler(BaseHandler):
     
@@ -801,6 +816,7 @@ class APIServer(tornado.web.Application):
             (r"/(.*)\.html", GenericPageHandler),
             (r"/about", AboutPageHandler),
             (r"/configure", ConfigPageHandler),
+            (r"/log", LogPageHandler),
             (r"/comiclist/browse", ComicListBrowserHandler),
             (r"/entities/browse/(.*)", EntitiesBrowserHandler),
             (r"/comic/([0-9]+)/reader", ReaderHandler),
@@ -872,30 +888,46 @@ class APIServer(tornado.web.Application):
 
 def main():
         
-    utils.fix_output_encoding()   
+    utils.fix_output_encoding()
+    
+    #Configure logging
     # root level        
     logger = logging.getLogger()    
     logger.setLevel(logging.DEBUG)
-    
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    
+    log_file = os.path.join(ComicStreamerConfig.getUserFolder(), "logs", "ComicStreamer.log")
+    if not os.path.exists(os.path.dirname(log_file)):
+        os.makedirs(os.path.dirname(log_file))
+    fh = logging.handlers.RotatingFileHandler(log_file, maxBytes=65536, backupCount=5, encoding="UTF8")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+    
+    # By default only do info level to console
+    sh = logging.StreamHandler(sys.stdout)
+    sh.setLevel(logging.INFO)
+    sh.setFormatter(formatter)
+    logger.addHandler(sh)
 
     config = ComicStreamerConfig()
     opts = Options()
-    
     opts.parseCmdLineArgs()
+
+    # set file logging according to config file
+    #fh.setLevel(config['general']['loglevel'])
+        
+    # turn up the log level, if requested
+    if opts.debug:
+        sh.setLevel(logging.DEBUG)        
+        #fh.setLevel(logging.DEBUG)
+
     config.applyOptions(opts)
-    print config
     
     app = APIServer(config, opts)
 
-    # set up a file that will be watched a restart
-    app.restart_watch_file = os.path.join(ComicStreamerConfig.getUserFolder(), "restart")
-    utils.touch(app.restart_watch_file)
-    tornado.autoreload.watch(app.restart_watch_file)
+    app.logFileHandler = fh
+    app.logConsoleHandler = sh    
     
     tornado.ioloop.IOLoop.instance().start()
 
