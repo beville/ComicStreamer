@@ -41,7 +41,8 @@ The FOLDER_LIST is a list of folders that will be scanned recursively
 for comics to add to the database (persisted)
 
   -p, --port                 The port the server should listen on. (persisted)
-  -r, --reset                Purge the existing database                                            
+  -r, --reset                Purge the existing database
+  -d, --debug                More verbose console output   
       --nomonitor            Don't start the folder scanner/monitor                                           
       --version              Display version                            
   -h, --help                 Display this message
@@ -54,6 +55,7 @@ for comics to add to the database (persisted)
         self.folder_list = None
         self.reset = False
         self.no_monitor = False
+        self.debug = False
         
     def display_msg_and_quit( self, msg, code, show_help=False ):
         appname = os.path.basename(sys.argv[0])
@@ -76,8 +78,8 @@ for comics to add to the database (persisted)
         # parse command line options
         try:
             opts, args = getopt.getopt( input_args, 
-                       "p:hr", 
-                       [ "help", "port=", "version", "reset",
+                       "dp:hr", 
+                       [ "help", "port=", "version", "reset", "debug"
                     "nomonitor" ] )
 
         except getopt.GetoptError as err:
@@ -87,6 +89,8 @@ for comics to add to the database (persisted)
         for o, a in opts:
             if o in ("-r", "--reset"):
                 self.reset = True
+            if o in ("-d", "--debug"):
+                self.debug = True                
             if o in ("-h", "--help"):
                 self.display_msg_and_quit( None, 0, show_help=True )
             if o in ("-p", "--port"):
@@ -105,5 +109,4 @@ for comics to add to the database (persisted)
         if len(args) > 0:
             #self.folder_list = [os.path.normpath(a.decode(filename_encoding)) for a in args]
             self.folder_list = [os.path.abspath(os.path.normpath(unicode(a.decode(filename_encoding)))) for a in args]
-        print "folderlist in parser:", self.folder_list
         
