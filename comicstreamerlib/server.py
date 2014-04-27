@@ -735,7 +735,6 @@ class ConfigPageHandler(BaseHandler):
         
         old_folder_list = self.application.config['general']['folder_list']
         new_folder_list = [os.path.abspath(os.path.normpath(unicode(a))) for a in folders_str.splitlines()]
-
         for f in new_folder_list:
             if not (os.path.exists(f) and  os.path.isdir(f)):
                 success_str = ""
@@ -801,7 +800,7 @@ class APIServer(tornado.web.Application):
         if opts.reset:
             logging.info( "Deleting any existing database!")
             self.dm.delete()
-            opts.reset = False
+            sys.exit(0)
             
         self.dm.create()
         
