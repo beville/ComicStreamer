@@ -24,8 +24,10 @@ import platform
 import codecs
 import uuid
 import logging
+import io
 
 from configobj import ConfigObj
+from validate import Validator
 
 from options import Options
 
@@ -59,41 +61,46 @@ class ComicStreamerConfig(ConfigObj):
         else:
             return os.path.dirname( os.path.abspath( __file__) )
 
-
-    def setDefaultValues( self ):
-
-        general = {
-            'port': 8888,
-            'install_id' : uuid.uuid4().hex,
-            'folder_list': [],
-            'debug': False,
-            'loglevel': logging.INFO,
-        }
-
-        self['general'] = general
+    configspec = u"""
+            [general]
+            port=integer(default=8888)
+            install_id=string(default="")
+            folder_list=string_list(default=list())
+           """
+    
 
     def __init__(self):
         super(ComicStreamerConfig, self).__init__()
                
-        encoding="UTF8"
-        default_encoding="UTF8"
-        
         self.csfolder = ComicStreamerConfig.getUserFolder()
 
+        # make sure folder exisits
         if not os.path.exists( self.csfolder ):
             os.makedirs( self.csfolder )
 
-        self.setDefaultValues()
+        # set up initial values
         self.filename = os.path.join(self.csfolder, "settings")
-                
-        # if config file doesn't exist, write one out
+        self.configspec=io.StringIO(ComicStreamerConfig.configspec)
+        self.encoding="UTF8"
+        
+        # since some stuff in the configobj has to happen during object initialization,
+        # use a temporary delegate,  and them merge it into self
+        tmp = ConfigObj(self.filename, configspec=self.configspec, encoding=self.encoding)
+        validator = Validator()
+        tmp.validate(validator,  copy=True)
+       
+        # set up the install ID
+        if tmp['general']['install_id'] == '':
+            tmp['general']['install_id'] = uuid.uuid4().hex
+
+        # normalize the folder list
+        tmp['general']['folder_list'] = [os.path.abspath(os.path.normpath(unicode(a))) for a in tmp['general']['folder_list']]
+
+        self.merge(tmp)
+        
         if not os.path.exists( self.filename ):
             self.write()
-        else:
-            tmp = ConfigObj(self.filename)
-            self.merge(tmp)
-            self['general']['folder_list'] = [os.path.abspath(os.path.normpath(unicode(a))) for a in self['general']['folder_list']]
-            
+        
     def applyOptions( self, opts ):
 
         modified = False
