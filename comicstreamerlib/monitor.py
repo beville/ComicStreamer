@@ -14,8 +14,8 @@ from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 import watchdog
 
-from comictaggerlib.comicarchive import *
-from comictaggerlib.issuestring import *
+from libs.comictaggerlib.comicarchive import *
+from libs.comictaggerlib.issuestring import *
 import utils
 
 from database import *
@@ -37,7 +37,6 @@ class Monitor():
     def __init__(self, dm, paths):
         
         self.dm = dm
-        self.settings = ComicTaggerSettings()
         self.style = MetaDataStyle.CIX
         self.queue = Queue.Queue(0)
         self.paths = paths
@@ -160,7 +159,7 @@ class Monitor():
         
         #print time.time() - start_time, "seconds"
 
-        ca = ComicArchive(path)
+        ca = ComicArchive(path,  default_image_path=os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"))
         
         if ca.seemsToBeAComicArchive():
             #print >>  sys.stdout, u"Adding {0}...     \r".format(count),
