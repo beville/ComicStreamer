@@ -23,6 +23,7 @@ import random
 import signal
 import sys
 import socket
+import webbrowser
 
 from libs.comictaggerlib.comicarchive import *
 
@@ -836,8 +837,8 @@ class APIServer(tornado.web.Application):
         ]
         
         settings = dict(
-            template_path=os.path.join(os.path.dirname(__file__), "templates"),
-            static_path=os.path.join(os.path.dirname(__file__), "static"),
+            template_path=os.path.join(ComicStreamerConfig.baseDir(), "templates"),
+            static_path=os.path.join(ComicStreamerConfig.baseDir(), "static"),
             debug=False,
             autoreload=False
         )
@@ -852,10 +853,11 @@ class APIServer(tornado.web.Application):
             self.monitor = Monitor(self.dm, self.config['general']['folder_list'])
             self.monitor.start()
             self.monitor.scan()
+        #webbrowser.open("http://localhost:8888")
 
     def restart(self):
         python = sys.executable
-        if getattr(sys, 'frozen', None) and  platform.system() == "Darwin":
+        if getattr(sys, 'frozen', None):
             os.execl(python, *sys.argv)
         else:
             os.execl(python, python, * sys.argv)    
