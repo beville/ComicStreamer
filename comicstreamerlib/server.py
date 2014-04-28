@@ -24,7 +24,7 @@ import signal
 import sys
 import socket
 
-from comictaggerlib.comicarchive import *
+from libs.comictaggerlib.comicarchive import *
 
 import csversion
 import utils
@@ -271,7 +271,7 @@ class ImageAPIHandler(GenericAPIHandler):
         image_data = None
         if obj is not None:
             if int(pagenum) < obj.page_count:
-                ca = ComicArchive(obj.path)
+                ca = ComicArchive(obj.path, default_image_path=os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"))
                 image_data = ca.getPage(int(pagenum))
     
         if image_data is None:
@@ -446,7 +446,7 @@ class FileAPIHandler(GenericAPIHandler):
         session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         if obj is not None:
-            ca = ComicArchive(obj.path)
+            ca = ComicArchive(obj.path, os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"))
             if ca.isZip():
                 self.add_header("Content-type","application/zip, application/octet-stream")
             else:
@@ -855,8 +855,11 @@ class APIServer(tornado.web.Application):
 
     def restart(self):
         python = sys.executable
-        os.execl(python, python, * sys.argv)    
-
+        if getattr(sys, 'frozen', None) and  platform.system() == "Darwin":
+            os.execl(python, *sys.argv)
+        else:
+            os.execl(python, python, * sys.argv)    
+            
     def rescan(self):
         self.dm.delete()
         self.restart()
