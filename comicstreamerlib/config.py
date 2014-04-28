@@ -30,6 +30,7 @@ from configobj import ConfigObj
 from validate import Validator
 
 from options import Options
+from libs.comictaggerlib.utils import which, addtopath
 
 class ComicStreamerConfig(ConfigObj):
 
@@ -100,6 +101,12 @@ class ComicStreamerConfig(ConfigObj):
         
         if not os.path.exists( self.filename ):
             self.write()
+            
+        # not sure if this belongs here:
+        # if mac app, and no unrar in path, add the one from the app bundle
+        if getattr(sys, 'frozen', None) and  platform.system() == "Darwin":
+            if which("unrar") is None:
+                addtopath(ComicStreamerConfig.baseDir())
         
     def applyOptions( self, opts ):
 
