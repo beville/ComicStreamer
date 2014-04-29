@@ -497,7 +497,7 @@ class Monitor():
         
         self.status = "IDLE"
         self.statusdetail = ""
-        self.scancomplete_ts = int(datetime.utcnow().strftime("%s")) * 1000 
+        self.scancomplete_ts = int(time.mktime(datetime.utcnow().timetuple()) * 1000)
         
         logging.info("Monitor: Added {0} comics".format(self.add_count))
         logging.info("Monitor: Removed {0} comics".format(self.remove_count))

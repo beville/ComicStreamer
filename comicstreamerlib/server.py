@@ -321,7 +321,7 @@ class ScanStatusAPIHandler(JSONResultAPIHandler):
         response = { 'status': status,
                      'detail':  detail,
                      'last_complete':  last_complete,
-                     'current_time':  int(datetime.utcnow().strftime("%s")) * 1000,
+                     'current_time':  int(time.mktime(datetime.utcnow().timetuple()) * 1000),
                     }
         self.setContentType()
         self.write(response)
