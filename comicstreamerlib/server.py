@@ -670,9 +670,9 @@ class MainHandler(BaseHandler):
             stats=dict()
             stats['total'] = session.query(Comic).count()
             dt = session.query(DatabaseInfo).first().last_updated
-            stats['last_updated'] = dt.strftime("%Y-%m-%d %H:%M:%S")
+            stats['last_updated'] = utils.utc_to_local(dt).strftime("%Y-%m-%d %H:%M:%S")
             dt = session.query(DatabaseInfo).first().created
-            stats['created'] = dt.strftime("%Y-%m-%d %H:%M:%S")
+            stats['created'] = utils.utc_to_local(dt).strftime("%Y-%m-%d %H:%M:%S")
             
             stats['series'] = len(set(session.query(Comic.series)))
             stats['persons'] = session.query(Person).count()
