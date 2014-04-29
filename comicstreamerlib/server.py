@@ -870,7 +870,10 @@ class APIServer(tornado.web.Application):
             self.monitor.scan()
             
         if opts.launch_browser:
-            webbrowser.open("http://localhost:8888", new=0)
+            if ((platform.system() == "Linux" and os.environ.has_key('DISPLAY')) or
+                    (platform.system() == "Darwin" and not os.environ.has_key('SSH_TTY')) or
+                    platform.system() == "Windows"):
+                webbrowser.open("http://localhost:8888", new=0)
 
     def restart(self):
         self.shutdown(10)
