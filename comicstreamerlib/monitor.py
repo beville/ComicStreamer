@@ -44,6 +44,11 @@ class Monitor():
         self.mutex = threading.Lock()
         self.eventProcessingTimer = None
         self.quit_when_done = False  # for debugging/testing
+        self.status = "IDLE"
+        self.statusdetail = ""
+        self.scancomplete_ts = ""
+        
+        
         
     def start(self):
         self.thread = threading.Thread(target=self.mainLoop)
@@ -408,14 +413,22 @@ class Monitor():
         buildDict(role_objs, self.role_dict)
         buildDict(generictag_objs, self.generictag_dict)
 
+    def setStatusDetail(self, detail, level=logging.DEBUG):
+        self.statusdetail = detail
+        if level == logging.DEBUG:
+            logging.debug(detail)
+        else:
+            logging.info(detail)
 
     def dofullScan(self, dirs):
         
-        logging.info(u"Monitor: Beginning file scan...")
-        logging.debug(u"Monitor: Making a list of all files in the folder...")
+        self.status = "SCANNING"
         
+        logging.info(u"Monitor: Beginning file scan...")
+        self.setStatusDetail(u"Monitor: Making a list of all files in the folders...")
+
         filelist = utils.get_recursive_filelist( dirs ) 
-        logging.debug(u"Monitor: done listing files.")
+        self.setStatusDetail(u"Monitor: done listing files.")
         
         self.add_count = 0      
         self.remove_count = 0
@@ -424,19 +437,19 @@ class Monitor():
         query = list(self.session.query(Comic))
         
         # look for missing or changed files 
-        logging.debug(u"Monitor: Removing missing or modified files from DB...")
+        self.setStatusDetail(u"Monitor: Removing missing or modified files from DB...")
         #start_time = time.time()
         for comic in query:
             self.checkIfRemovedOrModified( comic, self.paths )
         #print time.time() - start_time, "seconds"
-        logging.debug(u"Monitor: Done removing files.")
+        self.setStatusDetail(u"Monitor: Done removing files.")
         
         if self.remove_count > 0:
             self.dm.engine.echo = True
             self.session.commit()
             self.dm.engine.echo = False
 
-        logging.debug(u"Monitor: found {0} files to inspect...".format(len(filelist)))
+        self.setStatusDetail(u"Monitor: found {0} files to inspect...".format(len(filelist)))
         
         # make a list of all path strings in comic table
         db_pathlist = set([i[0] for i in list(self.session.query(Comic.path))])
@@ -445,7 +458,7 @@ class Monitor():
         filelist = filelist - db_pathlist
         db_pathlist = None
 
-        logging.info(u"Monitor: {0} new files to scan...".format(len(filelist)))
+        self.setStatusDetail(u"Monitor: {0} new files to scan...".format(len(filelist)), logging.INFO)
 
         md_list = []
         self.read_count = 0
@@ -453,10 +466,10 @@ class Monitor():
             md = self.getComicMetadata( filename )
             if md is not None:
                 md_list.append(md)
-            if self.read_count % 100 == 0:
-                logging.info(u"Monitor: {0} of {1} scanned...".format(self.read_count,len(filelist)))
+            if self.read_count % 100 == 0 and self.read_count != 0:
+                self.setStatusDetail(u"Monitor: {0} of {1} scanned...".format(self.read_count,len(filelist)), logging.INFO)
                 
-        logging.info(u"Monitor: finished scanning metadata in all {0} files".format(len(filelist)))
+        self.setStatusDetail(u"Monitor: finished scanning metadata in {0} of {1} files".format(self.read_count,len(filelist)), logging.INFO)
         
         filelist = None
         
@@ -479,10 +492,14 @@ class Monitor():
             # periodically commit   
             if self.add_count % 1000 == 0:
                 self.session.commit()
-                logging.info(u"Monitor: {0} of {1} added...".format(self.add_count,len(md_list)))
+                self.setStatusDetail(u"Monitor: {0} of {1} added...".format(self.add_count,len(md_list)), logging.INFO)
                 
         if self.add_count > 0:  
             self.session.commit()
+        
+        self.status = "IDLE"
+        self.statusdetail = ""
+        self.scancomplete_ts = int(datetime.utcnow().strftime("%s")) * 1000 
         
         logging.info("Monitor: Added {0} comics".format(self.add_count))
         logging.info("Monitor: Removed {0} comics".format(self.remove_count))
