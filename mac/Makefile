@@ -24,7 +24,7 @@ dist:
 	cp $(MAC_BASE)/app.icns $(APP_BUNDLE)/Contents/Resources/icon-windowed.icns
 	cp `which unrar` $(APP_BUNDLE)/Contents/MacOS
 	
-	rm -rf $(APP_BUNDLE)/Contents/MacOS/comicstreamerlib/static/HTML5-Comic-Book-Reader
+	rm -rf $(APP_BUNDLE)/Contents/MacOS/static/HTML5-Comic-Book-Reader
 
 	# fix the version string in the Info.plist
 	sed -i -e 's/0\.0\.0/$(VERSION_STR)/' $(MAC_BASE)/dist/ComicStreamer.app/Contents/Info.plist
