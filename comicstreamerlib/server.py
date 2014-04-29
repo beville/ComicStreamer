@@ -311,7 +311,21 @@ class DBInfoAPIHandler(JSONResultAPIHandler):
                     }
         self.setContentType()
         self.write(response)
-    
+        
+class ScanStatusAPIHandler(JSONResultAPIHandler):
+    def get(self):
+        status = self.application.monitor.status
+        detail = self.application.monitor.statusdetail
+        last_complete = self.application.monitor.scancomplete_ts
+        
+        response = { 'status': status,
+                     'detail':  detail,
+                     'last_complete':  last_complete,
+                     'current_time':  int(datetime.utcnow().strftime("%s")) * 1000,
+                    }
+        self.setContentType()
+        self.write(response)
+            
 class ComicListAPIHandler(ZippableAPIHandler):
     def get(self):
 
@@ -805,7 +819,7 @@ class APIServer(tornado.web.Application):
             
         self.dm.create()
         
-        self.listen(port)
+        self.listen(port, no_keep_alive = True)
         
         self.version = csversion.version
         
@@ -831,6 +845,7 @@ class APIServer(tornado.web.Application):
             (r"/comic/([0-9]+)/file", FileAPIHandler),
             (r"/entities/(.*)", EntityAPIHandler),
             (r"/control", ControlAPIHandler),
+            (r"/scanstatus", ScanStatusAPIHandler),
             (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': "favicon.ico"}),
             (r'/.*', UnknownHandler),
             
@@ -853,14 +868,20 @@ class APIServer(tornado.web.Application):
             self.monitor = Monitor(self.dm, self.config['general']['folder_list'])
             self.monitor.start()
             self.monitor.scan()
-        #webbrowser.open("http://localhost:8888")
+            
+        if opts.launch_browser:
+            webbrowser.open("http://localhost:8888", new=0)
 
     def restart(self):
-        python = sys.executable
+        self.shutdown(10)
+        executable = sys.executable
+        if "--nobrowser" not in sys.argv:
+            sys.argv.insert(1, "--nobrowser")
+        print sys.argv
         if getattr(sys, 'frozen', None):
-            os.execl(python, *sys.argv)
+            os.execl(executable, *sys.argv)
         else:
-            os.execl(python, python, * sys.argv)    
+            os.execl(executable, executable, * sys.argv)    
             
     def rescan(self):
         self.dm.delete()
@@ -883,7 +904,7 @@ class APIServer(tornado.web.Application):
 
         #self.stop()
      
-        logging.info('Will shutdown ComicStreamer in %s seconds ...', MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
+        logging.info('Will shutdown ComicStreamer in maximum %s seconds ...', MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
         io_loop = tornado.ioloop.IOLoop.instance()
      
         deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN
@@ -910,7 +931,7 @@ def main():
     log_file = os.path.join(ComicStreamerConfig.getUserFolder(), "logs", "ComicStreamer.log")
     if not os.path.exists(os.path.dirname(log_file)):
         os.makedirs(os.path.dirname(log_file))
-    fh = logging.handlers.RotatingFileHandler(log_file, maxBytes=65536, backupCount=5, encoding="UTF8")
+    fh = logging.handlers.RotatingFileHandler(log_file, maxBytes=1048576, backupCount=4, encoding="UTF8")
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
