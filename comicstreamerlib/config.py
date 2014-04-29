@@ -39,7 +39,7 @@ class ComicStreamerConfig(ConfigObj):
         filename_encoding = sys.getfilesystemencoding()
         if platform.system() == "Windows":
             folder = os.path.join( os.environ['APPDATA'], 'ComicStreamer' )
-        if platform.system() == "Darwin":
+        elif platform.system() == "Darwin":
             folder = os.path.join( os.path.expanduser('~') , 'Library/Application Support/ComicStreamer')
         else:
             folder = os.path.join( os.path.expanduser('~') , '.ComicStreamer')
