@@ -1,12 +1,6 @@
 Priority
-   log to file, view log view webpage
-   control:  cleanly rebuild DB -  causes thread error on rebuild
    consolidate all jquery files, make sure all loads are local
    add genre entity list
-   fix configobj unicode issues
-   test unicode user folder
-   
-
 ----------------
 Database:
    Versioning scheme?? (migrate or rebuild with each change?)
@@ -19,6 +13,7 @@ General Server
    more efficient queries (less joins, less selects)
    For shutdown, maybe have a mutex for mod operations to avoid corruption (maybe not needed??)
    Authentication!!
+   look into https
 
 API
    Versioning scheme!
@@ -30,14 +25,16 @@ API
 ENTITY API
       entity list:
 		 year? (or decade?)
+	  restore role
 ---------------------------      
 Web UI
 	  tags in popup
 	  scrolling in popup
       details popup: add filesize, last read date
+      config: file log level
 	  
 Monitor
-  watchdog doesn't trigger on file moving out of watched area
+   watchdog doesn't trigger on file moving out of watched area
     
 OS Integration:
    add minimal GUI front end for windows and mac
@@ -60,12 +57,11 @@ HTML READER feature requests
 ---------------------
 Requirements:
    tornado
-   sqlalchemy > 0.9
+   sqlalchemy >= 0.9
    watchdog
    dateutil
    pil
-   configobj
-   comictagger
+   configobj >= 5.0.5
   
 -------------------
 Bonus SQL!
