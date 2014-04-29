@@ -43,7 +43,8 @@ for comics to add to the database (persisted)
   -p, --port                 The port the server should listen on. (persisted)
   -r, --reset                Purge the existing database
   -d, --debug                More verbose console output   
-      --nomonitor            Don't start the folder scanner/monitor                                           
+      --nomonitor            Don't start the folder scanner/monitor 
+      --nobrowser            Don't launch a web browser                                            
       --version              Display version                            
   -h, --help                 Display this message
   
@@ -56,6 +57,7 @@ for comics to add to the database (persisted)
         self.reset = False
         self.no_monitor = False
         self.debug = False
+        self.launch_browser = True
         
     def display_msg_and_quit( self, msg, code, show_help=False ):
         appname = os.path.basename(sys.argv[0])
@@ -80,7 +82,7 @@ for comics to add to the database (persisted)
             opts, args = getopt.getopt( input_args, 
                        "dp:hr", 
                        [ "help", "port=", "version", "reset", "debug"
-                    "nomonitor" ] )
+                    "nomonitor", "nobrowser" ] )
 
         except getopt.GetoptError as err:
             self.display_msg_and_quit( str(err), 2 )
@@ -100,6 +102,8 @@ for comics to add to the database (persisted)
                     pass
             if o  == "--nomonitor":
                 self.no_monitor = True
+            if o  == "--nobrowser":
+                self.launch_browser = False                
             if o  == "--version":
                 print "ComicStreamer {0}:  Copyright (c) 2014 Anthony Beville".format(csversion.version)
                 print "Distributed under Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)"
