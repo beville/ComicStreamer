@@ -139,6 +139,15 @@ ul.nav
     display:block;
 }
 
+#scan_status
+{
+    font-size:.9em;
+}
+#scan_status_detail
+{
+    font-family: Lucidatypewriter, monospace;
+    font-size:.7em;
+}
 .comic_caption
 {
 	padding:3px 0 0;
