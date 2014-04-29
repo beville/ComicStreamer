@@ -47,9 +47,7 @@ class Monitor():
         self.status = "IDLE"
         self.statusdetail = ""
         self.scancomplete_ts = ""
-        
-        
-        
+
     def start(self):
         self.thread = threading.Thread(target=self.mainLoop)
         self.thread.daemon = True
