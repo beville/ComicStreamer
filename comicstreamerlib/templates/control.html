@@ -61,10 +61,7 @@
             function do_cmd(cmd)
             {
                 $.getJSON( '/control?cmd='+cmd);
-                if (cmd == 'stop')
-                {
-                    setTimeout(redirect, 2000);
-                }
+                setTimeout(redirect, 3000);
             }
             function sendCmd(cmd)
             {
