@@ -258,8 +258,6 @@ class Monitor():
                 comic.title = unicode(md.title)
             if md.comments is not None:
                 comic.comments = unicode(md.comments)
-            if md.genre is not None:
-                comic.genre = unicode(md.genre)
             if md.imprint is not None:
                 comic.imprint = unicode(md.imprint)
             if md.webLink is not None:
@@ -287,6 +285,11 @@ class Monitor():
                 storyarc = self.fetchObjByName( self.storyarc_dict,  sa.strip())                     
                 comic.storyarcs_raw.append(storyarc)
                 pass
+        if md.genre is not None:
+            for g in list(set(md.genre.split(","))):
+                genre = self.fetchObjByName( self.genre_dict,  g.strip())                     
+                comic.genres_raw.append(genre)
+                pass            
         if md.tags is not None:
             for gt in list(set(md.tags)):
                 generictag = self.fetchObjByName( self.generictag_dict,  gt.strip())                     
@@ -314,6 +317,9 @@ class Monitor():
         if md.storyArc is not None:
             for n in list(set(md.storyArc.split(","))):
                 self.storyarc_names.add(n.strip())
+        if md.genre is not None:
+            for n in list(set(md.genre.split(","))):
+                self.genre_names.add(n.strip())                
         if md.tags is not None:
             for n in list(set(md.tags)):
                 self.generictag_names.add(n.strip())        
@@ -329,6 +335,7 @@ class Monitor():
         team_names = set()
         location_names = set()
         storyarc_names = set()
+        genre_names = set()
         person_names = set()
         role_names = set()
         generictag_names = set()
@@ -346,6 +353,9 @@ class Monitor():
             if md.storyArc is not None:
                 for n in list(set(md.storyArc.split(","))):
                     storyarc_names.add(n.strip())
+            if md.genre is not None:
+                for n in list(set(md.genre.split(","))):
+                    genre_names.add(n.strip())
             if md.tags is not None:
                 for n in list(set(md.tags)):
                     generictag_names.add(n.strip())        
@@ -372,6 +382,7 @@ class Monitor():
         addNamedObjects(Team, team_names)
         addNamedObjects(Location, location_names)
         addNamedObjects(StoryArc, storyarc_names)
+        addNamedObjects(Genre, genre_names)
         addNamedObjects(Person, person_names)
         addNamedObjects(Role, role_names)
         addNamedObjects(GenericTag, generictag_names)
@@ -387,6 +398,7 @@ class Monitor():
         team_objs = self.session.query(Team).all()
         location_objs = self.session.query(Location).all()
         storyarc_objs = self.session.query(StoryArc).all()
+        genre_objs = self.session.query(Genre).all()
         person_objs = self.session.query(Person).all()
         role_objs = self.session.query(Role).all()
         generictag_objs = self.session.query(GenericTag).all()
@@ -399,6 +411,7 @@ class Monitor():
         self.team_dict = dict()
         self.location_dict = dict()
         self.storyarc_dict = dict()
+        self.genre_dict = dict()
         self.person_dict = dict()
         self.role_dict = dict()
         self.generictag_dict = dict()     
@@ -407,6 +420,7 @@ class Monitor():
         buildDict(team_objs, self.team_dict)
         buildDict(location_objs, self.location_dict)
         buildDict(storyarc_objs, self.storyarc_dict)
+        buildDict(genre_objs, self.genre_dict)
         buildDict(person_objs, self.person_dict)
         buildDict(role_objs, self.role_dict)
         buildDict(generictag_objs, self.generictag_dict)
@@ -472,7 +486,7 @@ class Monitor():
         filelist = None
         
         # now that all metadata is read in, make up lists of all the "named" entities to
-        # add to the DB before the comics proper
+        # add to the DB before the actual comics are added
 
         self.saveChildInfoToDB(md_list)
 

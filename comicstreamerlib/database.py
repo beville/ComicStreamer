@@ -119,6 +119,11 @@ comics_generictags_table = Table('comics_generictags', Base.metadata,
      Column('generictags_id', Integer, ForeignKey('generictags.id'))
 )
 
+# Junction table
+comics_genres_table = Table('comics_genres', Base.metadata,
+     Column('comic_id', Integer, ForeignKey('comics.id')),
+     Column('genre_id', Integer, ForeignKey('genres.id'))
+)
 
 class CreditComparator(RelationshipProperty.Comparator):
     def __eq__(self, other):
@@ -149,7 +154,6 @@ class Comic(Base):
     comments = Column(String)
     publisher = Column(String)
     title = Column(String)
-    genre = Column(String)
     imprint = Column(String)
     weblink = Column(String)
     filesize = Column(Integer)
@@ -175,6 +179,8 @@ class Comic(Base):
                                 cascade="delete") #, backref='comics')
     generictags_raw = relationship('GenericTag', secondary=comics_generictags_table,
                                 cascade="delete") #, backref='comics')
+    genres_raw = relationship('Genre', secondary=comics_genres_table,
+                                cascade="delete") #, backref='comics')
 
     persons_raw = relationship("Person",
                 secondary="join(Credit, Person, Credit.person_id == Person.id)",
@@ -197,6 +203,7 @@ class Comic(Base):
     generictags = association_proxy('generictags_raw', 'name')
     persons = association_proxy('persons_raw', 'name')
     roles = association_proxy('roles_raw', 'name')
+    genres = association_proxy('genres_raw', 'name')
      
     def __repr__(self):
         out = u"<Comic(id={0}, path={1},\n series={2}, issue={3}, year={4} pages={5}\n{6}".format(
@@ -302,7 +309,14 @@ class GenericTag(Base):
     name = ColumnProperty(
                     Column('name', String, unique = True),
                     comparator_factory=MyComparator)
-    
+
+class Genre(Base):
+    __tablename__ = "genres"
+    id = Column(Integer, primary_key=True)
+    name = ColumnProperty(
+                    Column('name', String, unique = True),
+                    comparator_factory=MyComparator)
+
 class DeletedComic(Base):
     __tablename__ = "deletedcomics"
     id = Column(Integer, primary_key=True)
