@@ -25,7 +25,49 @@
                     }
                 }
                 $('#credit_input').val(person);
-            }                  
+            }
+            
+            function processs_status(scanstatus)
+            {
+                // compare  performance.timing.loadEventEnd with scanstatus.last_complete
+                // and reload page, if older
+                //var load_time = utc_offset + performance.timing.loadEventEnd;
+                if (page_load_time == 0)
+                {
+                    page_load_time = scanstatus.current_time;
+                }
+                // need to revisit this.  if the client time is not in sync, this could cause keep page reloading
+                // probably better to use some sort of server time
+                if (page_load_time < scanstatus.last_complete)
+                {
+                    location.reload();
+                }
+                
+                // update some elements here
+                $('#scan_status').text("Scan status: " + scanstatus.status)
+                $('#scan_status_detail').text(scanstatus.detail)
+                var delay = 5000;
+                if (scanstatus.status != 'IDLE')
+                {
+                    delay = 2000;
+                }
+                setTimeout(fetch_status, delay);
+            }
+            function fetch_status()
+            {
+                $.getJSON( '/scanstatus', processs_status);
+            }
+
+            //var date = new Date();
+            //var utc_offset = date.getTimezoneOffset() * 60 * 1000;
+            var page_load_time = 0;
+            $(document).ready(
+
+                function()
+                {
+                    setTimeout(fetch_status, 1000);           
+                }
+            );
         </script>
            
     </head>
@@ -43,11 +85,15 @@
                         <li>{{ stats['total'] }} comics, including {{ stats['series'] }} series and {{ stats['persons'] }} creators/contributors</li>           
                     </ul>
                     <a href="/comiclist/browse">
-                        <h3>
-                        <center><strong>View entire library</a> or
-                        <a href="#main_search">search</a> or
-                        <a href="#main_browse">browse</a></strong></center>
-                        <h3>
+                    <h3>
+                    <center><strong>View entire library</a> or
+                    <a href="#main_search">search</a> or
+                    <a href="#main_browse">browse</a></strong></center>
+                    <h3>
+                    <div id="scan_status">
+                    </div>
+                    <div id="scan_status_detail">
+                    </div>    
                 </div>
                 <div id="main_random">
                     <span><h3>Random Pull</h3></span>
