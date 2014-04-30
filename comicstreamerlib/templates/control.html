@@ -61,7 +61,23 @@
             function do_cmd(cmd)
             {
                 $.getJSON( '/control?cmd='+cmd);
-                setTimeout(redirect, 3000);
+                
+                if (cmd == 'restart' ) delay = 2000;
+                if (cmd == 'reset' )   delay = 8000;
+                if (cmd == 'stop' )    delay = 1000;
+                    
+                setTimeout(redirect, delay);
+                
+                if (cmd == 'reset' || cmd == 'restart')
+                {
+                    $( "#dialog-wait" ).dialog({
+                           resizable: false,
+                           height:180,
+                           width:350,
+                           modal: true,
+                         });
+                }
+                
             }
             function sendCmd(cmd)
             {
@@ -116,7 +132,10 @@
     </div>          
     <div id="dialog-stop" title="Stop ComicStreamer?" style="display:none">
       <p><span style="float:left; margin:0 7px 20px 0;"></span>Are you sure you want to stop ComicStreamer?</p>
-    </div>          
+    </div>
+    <div id="dialog-wait" title="Please Wait" style="display:none">
+      <p><span style="float:left; margin:0 7px 20px 0;"></span><center>Page should reload in a few seconds.<br /><br />If not, click <a href="/">here</center></a></p>
+    </div>      
     </body>
 </html>
 
