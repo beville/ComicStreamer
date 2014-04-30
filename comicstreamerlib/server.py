@@ -34,10 +34,16 @@ from monitor import Monitor
 from config import ComicStreamerConfig
 from options import Options
 
-
+def custom_get_current_user(handler):
+    if handler.get_secure_cookie("auth"):
+        if handler.get_secure_cookie("auth") == handler.application.password:
+            return "theuser"
+    else:
+        return None
 
 class BaseHandler(tornado.web.RequestHandler):
-    pass
+    def get_current_user(self):
+        return custom_get_current_user(self)
     
 class GenericAPIHandler(BaseHandler):
     pass
@@ -254,7 +260,7 @@ class ControlAPIHandler(GenericAPIHandler):
             self.application.restart()
         elif cmd == "reset":
             logging.info("Rebuild DB command")
-            self.application.rescan()
+            self.application.rebuild()
         elif cmd == "stop":
             logging.info("Stop command")
             self.application.shutdown()
@@ -665,42 +671,43 @@ class UnknownHandler(BaseHandler):
             self.write("Whoops! Four-oh-four.")
 
 class MainHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
-            session = self.application.dm.Session()
-            stats=dict()
-            stats['total'] = session.query(Comic).count()
-            dt = session.query(DatabaseInfo).first().last_updated
-            stats['last_updated'] = utils.utc_to_local(dt).strftime("%Y-%m-%d %H:%M:%S")
-            dt = session.query(DatabaseInfo).first().created
-            stats['created'] = utils.utc_to_local(dt).strftime("%Y-%m-%d %H:%M:%S")
-            
-            stats['series'] = len(set(session.query(Comic.series)))
-            stats['persons'] = session.query(Person).count()
-            
-            recently_added_comics = session.query(Comic).order_by(Comic.added_ts.desc()).limit(10)
-            recently_read_comics = session.query(Comic).filter(Comic.lastread_ts != "").order_by(Comic.lastread_ts.desc()).limit(10)
-            
-            roles_query = session.query(Role.name)
-            roles_list = [i[0] for i in list(roles_query)]
+        session = self.application.dm.Session()
+        stats=dict()
+        stats['total'] = session.query(Comic).count()
+        dt = session.query(DatabaseInfo).first().last_updated
+        stats['last_updated'] = utils.utc_to_local(dt).strftime("%Y-%m-%d %H:%M:%S")
+        dt = session.query(DatabaseInfo).first().created
+        stats['created'] = utils.utc_to_local(dt).strftime("%Y-%m-%d %H:%M:%S")
+        
+        stats['series'] = len(set(session.query(Comic.series)))
+        stats['persons'] = session.query(Person).count()
+        
+        recently_added_comics = session.query(Comic).order_by(Comic.added_ts.desc()).limit(10)
+        recently_read_comics = session.query(Comic).filter(Comic.lastread_ts != "").order_by(Comic.lastread_ts.desc()).limit(10)
+        
+        roles_query = session.query(Role.name)
+        roles_list = [i[0] for i in list(roles_query)]
 
-            # SQLite specific random call
-            random_comic = session.query(Comic).order_by(func.random()).first()
-            if random_comic is None:
-                random_comic = type('fakecomic', (object,), 
-                 {'id':0, 'series':'Oops', 'issue':1})()
-            self.render("index.html", stats=stats,
-                        random_comic=random_comic,
-                        recently_added = list(recently_added_comics),
-                        recently_read = list(recently_read_comics),
-                        roles = roles_list)
+        # SQLite specific random call
+        random_comic = session.query(Comic).order_by(func.random()).first()
+        if random_comic is None:
+            random_comic = type('fakecomic', (object,), 
+             {'id':0, 'series':'Oops', 'issue':1})()
+        self.render("index.html", stats=stats,
+                    random_comic=random_comic,
+                    recently_added = list(recently_added_comics),
+                    recently_read = list(recently_read_comics),
+                    roles = roles_list)
 
 class GenericPageHandler(BaseHandler):
     def get(self,page):
-            self.render(page+".html")
+        self.render(page+".html")
 
 class AboutPageHandler(BaseHandler):
     def get(self):
-            self.render("about.html", version=self.application.version)            
+        self.render("about.html", version=self.application.version)            
 
 
 class LogPageHandler(BaseHandler):
@@ -796,6 +803,25 @@ class ConfigPageHandler(BaseHandler):
                 self.application.config.write()
                 
         self.render_config(success=success_str, failure=failure_str)
+        
+class LoginHandler(BaseHandler):
+    def get(self):
+        if  len(self.get_arguments("next")) != 0:
+            next=self.get_argument("next")
+        else:
+            next="/"
+        self.render('login.html', next=next)
+
+    def post(self):
+        next = self.get_argument("next")
+
+        if  len(self.get_arguments("password")) != 0:
+                
+            print self.application.password, self.get_argument("password") , next
+            if self.get_argument("password")  ==  self.application.password:
+                self.set_secure_cookie("auth", self.get_argument("password"))
+                
+        self.redirect(next)
             
 class APIServer(tornado.web.Application):
     def __init__(self, config, opts):
@@ -812,9 +838,12 @@ class APIServer(tornado.web.Application):
         logging.info( "Stream server running on port {0}...".format(port))
         self.dm = DataManager()
         
-        if opts.reset:
+        if opts.reset or opts.reset_and_run:
             logging.info( "Deleting any existing database!")
             self.dm.delete()
+            
+        # quit on a standard reset
+        if opts.reset:
             sys.exit(0)
             
         self.dm.create()
@@ -822,6 +851,7 @@ class APIServer(tornado.web.Application):
         self.listen(port, no_keep_alive = True)
         
         self.version = csversion.version
+        self.password = "password"
         
         handlers = [
             # Web Pages
@@ -833,6 +863,7 @@ class APIServer(tornado.web.Application):
             (r"/comiclist/browse", ComicListBrowserHandler),
             (r"/entities/browse/(.*)", EntitiesBrowserHandler),
             (r"/comic/([0-9]+)/reader", ReaderHandler),
+            (r"/login", LoginHandler),
             # Data
             (r"/dbinfo", DBInfoAPIHandler),
             (r"/version", VersionAPIHandler),
@@ -855,7 +886,10 @@ class APIServer(tornado.web.Application):
             template_path=os.path.join(ComicStreamerConfig.baseDir(), "templates"),
             static_path=os.path.join(ComicStreamerConfig.baseDir(), "static"),
             debug=False,
-            autoreload=False
+            autoreload=False,
+            login_url="/login",
+            cookie_secret="13oETzkxqasAyDKl4GEzGeJDJFuYhdhetr2htwjdhewjdhewj2XdTP1o/Vo=",
+            xsrf_cookies=True,
         )
                 
         tornado.web.Application.__init__(self, handlers, **settings)
@@ -875,8 +909,13 @@ class APIServer(tornado.web.Application):
                     platform.system() == "Windows"):
                 webbrowser.open("http://localhost:8888", new=0)
 
+    def rebuild(self):
+        # after restart, purge the DB
+        sys.argv.insert(1, "--_resetdb_and_run")
+        self.restart()
+        
     def restart(self):
-        self.shutdown(10)
+        self.shutdown()
         executable = sys.executable
         if "--nobrowser" not in sys.argv:
             sys.argv.insert(1, "--nobrowser")
@@ -885,27 +924,16 @@ class APIServer(tornado.web.Application):
             os.execl(executable, *sys.argv)
         else:
             os.execl(executable, executable, * sys.argv)    
-            
-    def rescan(self):
-        self.dm.delete()
-        self.restart()
-        """
-        self.monitor.stop()
-        self.dm.delete()
-        self.dm.create()
-        self.monitor = Monitor(self.dm, self.config['general']['folder_list'])
-        self.monitor.start()
-        self.monitor.scan()        
-        """
         
     def signal_handler(self, signal, frame):
         self.shutdown()
         
     def shutdown(self):
         
-        MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 1
+        MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 3
 
-        #self.stop()
+        logging.info('Initiating shutdown...')
+        self.monitor.stop()
      
         logging.info('Will shutdown ComicStreamer in maximum %s seconds ...', MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
         io_loop = tornado.ioloop.IOLoop.instance()
@@ -918,8 +946,22 @@ class APIServer(tornado.web.Application):
                 io_loop.add_timeout(now + 1, stop_loop)
             else:
                 io_loop.stop()
-                logging.info('Shutdown')
+                logging.info('Shutdown complete.')
         stop_loop()
+        
+    def log_request(self, handler):
+        if handler.get_status() < 300:
+            log_method = logging.debug
+        elif handler.get_status() < 400:
+            log_method = logging.debug
+        elif handler.get_status() < 500:
+            log_method = logging.warning
+        else:
+            log_method = logging.error
+        request_time = 1000.0 * handler.request.request_time()
+        log_method("%d %s %.2fms", handler.get_status(),
+                   handler._request_summary(), request_time)
+        
 
 def main():
         
