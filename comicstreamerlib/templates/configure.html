@@ -106,6 +106,7 @@
         <div id=content>
             
             <form action="configure" method="post">
+                {% module xsrf_form_html() %}
                 <div>
                     <label>
                         <span>Port</span><input id="port" type="text" name="port" value="{{port}}" />
