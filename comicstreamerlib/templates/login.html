@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8">
+        <link rel="icon" href="/favicon.ico" />	      
+        
+        <title>ComicStreamer - Logs</title>
+        
+        
+        <style type="text/css">
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>
+
+        <style type="text/css">
+            input.big
+            {
+                font-size: 30px;
+                font-weight: bold;
+                color: black;
+            }
+        </style>
+        
+    </head>
+    <body>
+        <div id="header"><h2>ComicStreamer - Login</h2></div>
+              
+        <div id=content>
+            <form action="/login" method="post">
+                {% module xsrf_form_html() %}
+                <input  type="hidden" name="next" value="{{next}}" />
+                <div><input class="big" type="password" name="password" size="15"/></div>
+                <br>
+                <input type="button" value="Submit" alt="Login">
+            </form>
+        </div>
+    
+        <!--
+        <div id=navigation>
+            {% include menu.html %}
+        </div>
+        -->    
+      
+    </body>
+</html>
