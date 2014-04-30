@@ -671,7 +671,7 @@ class UnknownHandler(BaseHandler):
             self.write("Whoops! Four-oh-four.")
 
 class MainHandler(BaseHandler):
-    @tornado.web.authenticated
+    #@tornado.web.authenticated
     def get(self):
         session = self.application.dm.Session()
         stats=dict()
