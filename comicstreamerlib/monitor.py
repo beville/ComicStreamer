@@ -61,7 +61,7 @@ class Monitor():
     def mainLoop(self):
 
         logging.debug("Monitor: started main loop.")
-        self.session = session = self.dm.Session()
+        self.session = self.dm.Session()
         
         observer = Observer()
         self.eventHandler = MonitorEventHandler(self)
@@ -87,6 +87,8 @@ class Monitor():
             if self.quit:
                 break
             
+        self.session.close()
+        self.session = None
         observer.stop()
         logging.debug("Monitor: stopped main loop.")
         
@@ -453,6 +455,10 @@ class Monitor():
         #start_time = time.time()
         for comic in query:
             self.checkIfRemovedOrModified( comic, self.paths )
+            if self.quit:
+                self.setStatusDetail(u"Monitor: halting scan!")
+                return
+                
         #print time.time() - start_time, "seconds"
         self.setStatusDetail(u"Monitor: Done removing files.")
         
@@ -480,7 +486,10 @@ class Monitor():
                 md_list.append(md)
             if self.read_count % 100 == 0 and self.read_count != 0:
                 self.setStatusDetail(u"Monitor: {0} of {1} scanned...".format(self.read_count,len(filelist)), logging.INFO)
-                
+            if self.quit:
+                self.setStatusDetail(u"Monitor: halting scan!")
+                return 
+               
         self.setStatusDetail(u"Monitor: finished scanning metadata in {0} of {1} files".format(self.read_count,len(filelist)), logging.INFO)
         
         filelist = None
@@ -500,7 +509,10 @@ class Monitor():
 
         for md  in md_list:
             self.addComicFromMetadata( md )
-
+            if self.quit:
+                self.setStatusDetail(u"Monitor: halting scan!")
+                return
+                
             # periodically commit   
             if self.add_count % 1000 == 0:
                 self.session.commit()
@@ -521,7 +533,7 @@ class Monitor():
             self.session.commit()
             
         if self.quit_when_done:
-            sys.quit = True
+            self.quit = True
 
     def doEventProcessing(self, eventList):
         logging.debug(u"Monitor: event_list:{0}".format(eventList))
