@@ -44,6 +44,7 @@ import signal
 import sys
 import socket
 import webbrowser
+import time
 
 from libs.comictaggerlib.comicarchive import *
 
@@ -852,6 +853,8 @@ class APIServer(tornado.web.Application):
         utils.fix_output_encoding()   
         
         self.config = config
+        self.opts = opts
+        
         port = self.config['general']['port']
         signal.signal(signal.SIGINT, self.signal_handler)
         
@@ -944,12 +947,22 @@ class APIServer(tornado.web.Application):
     def restart(self):
         self.shutdown()
         executable = sys.executable
-        if "--nobrowser" not in sys.argv:
-            sys.argv.insert(1, "--nobrowser")
+            
+        new_argv = ["--nobrowser"]
+        if self.opts.quiet:
+            new_argv.append("-q")
+        if self.opts.debug:
+            new_argv.append("-d")
+        if  "--_resetdb_and_run" in sys.argv:
+            new_argv.append("--_resetdb_and_run")
+
         if getattr(sys, 'frozen', None):
-            os.execl(executable, *sys.argv)
+            # only keep selected args
+            new_argv.insert(0, os.path.basename(executable) )
+            os.execv(executable, new_argv)
         else:
-            os.execl(executable, executable, * sys.argv)    
+            new_argv.insert(0, os.path.basename(sys.argv[0]) )
+            os.execl(executable, executable, *new_argv)    
         
     def signal_handler(self, signal, frame):
         self.shutdown()
@@ -990,7 +1003,6 @@ class APIServer(tornado.web.Application):
         
 
 def main():
-        
     utils.fix_output_encoding()
     
     #Configure logging
@@ -1022,8 +1034,9 @@ def main():
         
     # turn up the log level, if requested
     if opts.debug:
-        sh.setLevel(logging.DEBUG)        
-        #fh.setLevel(logging.DEBUG)
+        sh.setLevel(logging.DEBUG)
+    elif opts.quiet:
+        sh.setLevel(logging.CRITICAL)
 
     config.applyOptions(opts)
     
