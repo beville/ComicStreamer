@@ -840,7 +840,7 @@ class LoginHandler(BaseHandler):
 
         if  len(self.get_arguments("password")) != 0:
                 
-            print self.application.password, self.get_argument("password") , next
+            #print self.application.password, self.get_argument("password") , next
             if self.get_argument("password")  ==  self.application.password:
                 self.set_secure_cookie("auth", self.get_argument("password"))
                 
@@ -945,7 +945,6 @@ class APIServer(tornado.web.Application):
         executable = sys.executable
         if "--nobrowser" not in sys.argv:
             sys.argv.insert(1, "--nobrowser")
-        print sys.argv
         if getattr(sys, 'frozen', None):
             os.execl(executable, *sys.argv)
         else:

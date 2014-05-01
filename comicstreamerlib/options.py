@@ -121,9 +121,7 @@ for comics to add to the database (persisted)
             self.folder_list = [os.path.abspath(os.path.normpath(unicode(a.decode(filename_encoding)))) for a in args]
         
         # remove certain private flags from args
-        print sys.argv
         try:
             sys.argv.remove("--_resetdb_and_run")
         except:
             pass
-        print sys.argv
