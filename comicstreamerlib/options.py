@@ -43,6 +43,7 @@ for comics to add to the database (persisted)
   -p, --port                 The port the server should listen on. (persisted)
   -r, --reset                Purge the existing database and quit
   -d, --debug                More verbose console output   
+  -q, --quiet                No console output   
       --nomonitor            Don't start the folder scanner/monitor 
       --nobrowser            Don't launch a web browser                                            
       --version              Display version                            
@@ -57,6 +58,7 @@ for comics to add to the database (persisted)
         self.reset = False
         self.no_monitor = False
         self.debug = False
+        self.quiet = False
         self.launch_browser = True
         self.reset_and_run = False
         
@@ -81,8 +83,8 @@ for comics to add to the database (persisted)
         # parse command line options
         try:
             opts, args = getopt.getopt( input_args, 
-                       "dp:hr", 
-                       [ "help", "port=", "version", "reset", "debug"
+                       "dp:hrq", 
+                       [ "help", "port=", "version", "reset", "debug", "quiet",
                     "nomonitor", "nobrowser",
                     "_resetdb_and_run", #private
                     ] )
@@ -96,6 +98,8 @@ for comics to add to the database (persisted)
                 self.reset = True
             if o in ("-d", "--debug"):
                 self.debug = True                
+            if o in ("-q", "--quiet"):
+                self.quiet = True                
             if o in ("-h", "--help"):
                 self.display_msg_and_quit( None, 0, show_help=True )
             if o in ("-p", "--port"):
