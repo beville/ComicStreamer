@@ -29,15 +29,7 @@
             
             function processs_status(scanstatus)
             {
-                // compare  performance.timing.loadEventEnd with scanstatus.last_complete
-                // and reload page, if older
-                //var load_time = utc_offset + performance.timing.loadEventEnd;
-                if (page_load_time == 0)
-                {
-                    page_load_time = scanstatus.current_time;
-                }
-                // need to revisit this.  if the client time is not in sync, this could cause keep page reloading
-                // probably better to use some sort of server time
+                // if new scan complete time is newer than this page, reload the page
                 if (page_load_time < scanstatus.last_complete)
                 {
                     location.reload();
@@ -60,7 +52,7 @@
 
             //var date = new Date();
             //var utc_offset = date.getTimezoneOffset() * 60 * 1000;
-            var page_load_time = 0;
+            var page_load_time = {{ server_time }};
             $(document).ready(
 
                 function()
