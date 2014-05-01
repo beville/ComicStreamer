@@ -297,15 +297,16 @@ class ImageAPIHandler(GenericAPIHandler):
         session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         image_data = None
+        default_img_file = os.path.join(ComicStreamerConfig.baseDir(),"images", "default.jpg")
+
         if obj is not None:
             if int(pagenum) < obj.page_count:
-                ca = ComicArchive(obj.path, default_image_path=os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"))
+                ca = ComicArchive(obj.path, default_image_path=default_img_file)
                 image_data = ca.getPage(int(pagenum))
     
         if image_data is None:
-            f = open(os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"), 'r')
-            image_data = f.read()
-            f.close()
+            with open(default_img_file, 'rb') as fd:
+                image_data = fd.read()
             
         return image_data
     
