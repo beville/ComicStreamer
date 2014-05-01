@@ -31,9 +31,6 @@ try:
 except:
     have_bonjour = False
 
-
-
-
 class BonjourThread(threading.Thread):
     def __init__(self, port):
         super(BonjourThread, self).__init__()
