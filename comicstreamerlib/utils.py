@@ -26,6 +26,8 @@ import platform
 import locale
 import codecs
 import calendar
+import hashlib
+import time
 from datetime import datetime, timedelta
 	
 class UtilsVars:
@@ -81,7 +83,15 @@ def get_recursive_filelist( pathlist ):
 def touch(fname, times=None):
     with open(fname, 'a'):
         os.utime(fname, times)
-		
+import hashlib
+import os
+
+def getDigest(password):
+    digest = hashlib.sha256(password).hexdigest()
+    for x in range(0, 1002):
+        digest = hashlib.sha256(digest).hexdigest()
+    time.sleep(.5)
+    return digest
 
 def utc_to_local(utc_dt):
     # get integer timestamp to avoid precision lost
