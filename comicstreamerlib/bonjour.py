@@ -23,8 +23,16 @@ limitations under the License.
 import threading
 import select
 import sys
-import pybonjour
 import logging
+
+try:
+    import pybonjour
+    have_bonjour = True
+except:
+    have_bonjour = False
+
+
+
 
 class BonjourThread(threading.Thread):
     def __init__(self, port):
@@ -39,6 +47,10 @@ class BonjourThread(threading.Thread):
             logging.info("Registered bonjour server: {0}:{1}:(port {2})".format(name,regtype,self.port))
         
     def run(self):
+        if not have_bonjour:
+            logging.warn("Cannot run bonjour server!  Maybe some packages need to be installed?")
+            return
+        
         sdRef = pybonjour.DNSServiceRegister(name = self.name,
                                              regtype = self.regtype,
                                              port = self.port,
