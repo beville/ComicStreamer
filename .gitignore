@@ -1,8 +1,17 @@
 # Auto-generated
 *.pyc
+.DS_Store
+*.stackdump
 
 # Testing stuff
 test/
 test.py
 
 /.project
+/dev_graphics
+/release
+/windows/dist
+/windows/nsis/release.nsh
+/mac/dist
+/mac/build
+/mac/ComicStreamer.spec
