@@ -21,8 +21,8 @@ ComicStreamer is very early ALPHA stages, and may be very flakey, eating up memo
 * tornado
 * sqlalchemy >= 0.9
 * watchdog
-* dateutil
-* pil
+* python-dateutil
+* PIL
 * configobj >= 5.0.5
    
 (Note: on some ubuntu releases it may be better to get PIL from ubuntu apt package "python-imaging", rather than via pip)
