@@ -1,5 +1,25 @@
 #!/usr/bin/env python
 
+"""
+ComicStreamer main server classes
+"""
+
+"""
+Copyright 2012-2014  Anthony Beville
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 from datetime import date
 import tornado.escape
 import tornado.ioloop
@@ -33,6 +53,7 @@ from database import *
 from monitor import Monitor
 from config import ComicStreamerConfig
 from options import Options
+from bonjour import BonjourThread
 
 def custom_get_current_user(handler):
     if handler.get_secure_cookie("auth"):
@@ -699,8 +720,10 @@ class MainHandler(BaseHandler):
                     random_comic=random_comic,
                     recently_added = list(recently_added_comics),
                     recently_read = list(recently_read_comics),
-                    roles = roles_list)
-
+                    roles = roles_list,
+                    server_time =  int(time.mktime(datetime.utcnow().timetuple()) * 1000)
+                )
+        
 class GenericPageHandler(BaseHandler):
     def get(self,page):
         self.render(page+".html")
@@ -849,6 +872,9 @@ class APIServer(tornado.web.Application):
         self.dm.create()
         
         self.listen(port, no_keep_alive = True)
+        
+        self.bonjour = BonjourThread(port)
+        self.bonjour.start()
         
         self.version = csversion.version
         self.password = "password"
