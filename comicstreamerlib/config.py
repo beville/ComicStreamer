@@ -52,16 +52,17 @@ class ComicStreamerConfig(ConfigObj):
     
     @staticmethod
     def baseDir():
+        encoding = sys.getfilesystemencoding()
         if getattr(sys, 'frozen', None):
             if platform.system() == "Darwin":
                 return sys._MEIPASS
             else: # Windows
                 #Preserve this value, in case sys.argv gets changed importing a plugin script
                 if ComicStreamerConfig.frozen_win_exe_path is None:
-                    ComicStreamerConfig.frozen_win_exe_path = os.path.dirname( os.path.abspath( sys.argv[0] ) )
-                return ComicStreamerConfig.frozen_win_exe_path
+                    ComicStreamerConfig.frozen_win_exe_path = os.path.dirname( os.path.abspath( unicode(sys.executable, encoding) ) )
+                return ComicStreamerConfig.frozen_win_exe_path    
         else:
-            return os.path.dirname( os.path.abspath( __file__) )
+            return os.path.dirname( os.path.abspath(unicode(__file__, encoding)) )
 
     configspec = u"""
             [general]
