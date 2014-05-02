@@ -57,7 +57,10 @@ from options import Options
 from bonjour import BonjourThread
 
 def custom_get_current_user(handler):
-    return  handler.get_secure_cookie("user")
+    user = handler.get_secure_cookie("user")
+    if user:
+        user = user + "XX"
+    return  user
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -407,6 +410,7 @@ class DeletedAPIHandler(ZippableAPIHandler):
         self.writeResults(json_data)    
 
 class ComicListBrowserHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
 
         entity_src = self.get_argument(u"entity_src", default=None)
@@ -422,6 +426,7 @@ class ComicListBrowserHandler(BaseHandler):
         self.render("comic_results2.html", src=src)
 
 class EntitiesBrowserHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self,args):
         arg_string = args
         #if '/' in args:
@@ -659,6 +664,7 @@ class EntityAPIHandler(JSONResultAPIHandler):
         return finalquery
         
 class ReaderHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self, comic_id):
         session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
@@ -686,11 +692,12 @@ class ReaderHandler(BaseHandler):
             return text
 
 class UnknownHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
             self.write("Whoops! Four-oh-four.")
 
 class MainHandler(BaseHandler):
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def get(self):
         session = self.application.dm.Session()
         stats=dict()
@@ -723,16 +730,19 @@ class MainHandler(BaseHandler):
                 )
         
 class GenericPageHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self,page):
         self.render(page+".html")
 
 class AboutPageHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         self.render("about.html", version=self.application.version)            
 
 
 class LogPageHandler(BaseHandler):
     
+    @tornado.web.authenticated
     def get(self):
 
         log_file = os.path.join(ComicStreamerConfig.getUserFolder(), "logs", "ComicStreamer.log")
@@ -766,6 +776,7 @@ class ConfigPageHandler(BaseHandler):
                     success=success,
                     failure=failure)
         
+    @tornado.web.authenticated
     def get(self):
         formdata = dict()
         formdata['port'] = self.application.config['general']['port']
@@ -778,6 +789,7 @@ class ConfigPageHandler(BaseHandler):
         
         self.render_config(formdata)
          
+    @tornado.web.authenticated
     def post(self):
         formdata = dict()
         formdata['port'] = self.get_argument(u"port", default="")
@@ -879,7 +891,7 @@ class LoginHandler(BaseHandler):
             if (utils.getDigest(self.get_argument("password"))  ==  self.application.config['security']['password_digest'] and
                 self.get_argument("username")  ==  self.application.config['security']['username']):
                 #self.set_secure_cookie("auth", self.application.config['security']['password_digest'])
-                self.set_secure_cookie("user", self.application.config['security']['username'])
+                self.set_secure_cookie("user", self.application.config['security']['username']+"XX")
                 
         self.redirect(next)
             
