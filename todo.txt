@@ -1,44 +1,7 @@
-Priority
-   control page: set username, password, API key
-	thread for managing bookmarking. need to add mutexes around all commits
+Priority:
+   implement API key handling
+   thread for managing bookmarking. need to add mutexes around all commits
 ----------------
-Database:
-   Versioning scheme?? (migrate or rebuild with each change?)
-   bug: per_page setting slice off child lists...?? (mitigated by ordering
-   bug: possible cascade confusion on lots of deletes/adds
-----------------
-General Server
-   more efficient queries (less joins, less selects)
-   Authentication!!
-   look into https
-
-API
-   Versioning scheme!
-   proper sorting by issue number (numeric, not string)
-   selective fields
-   search with OR / AND in field
-   filter by genre
-
-------------------
-ENTITY API
-      entity list:
-	  genre
-		 year? (or decade?)
-	  restore role
----------------------------      
-Web UI
-	tags in popup
-	scrolling in popup
-	details popup: add filesize, last read date
-	config: file log level
-	consolidate all jquery files, make sure all loads are local
-	  
-Monitor
-   watchdog doesn't trigger on file moving out of watched area
-   
-Windows
-
-   
 OS Integration:
    add minimal GUI front end for windows and mac
       Mac OS - icon and dropdown menu
@@ -46,6 +9,46 @@ OS Integration:
    Linux init script to run as server
    
    Look into SABZBd/couch potato implementation
+------------------
+Database:
+   Versioning scheme?? (migrate or rebuild with each change?)
+   bug: per_page setting slice off child lists...?? (mitigated by ordering
+   bug: possible cascade confusion on lots of deletes/adds
+----------------
+General Server:
+   more efficient queries (less joins, less selects)
+   look into https
+------------------
+API:
+   Versioning scheme!
+   proper sorting by issue number (numeric, not string)
+   selective fields
+   search with OR / AND in field
+   filter by genre
+
+
+Entity API:
+      entity list:
+	  genre
+		 year? (or decade?)
+	  restore role
+---------------------------      
+Web UI:
+	tags in popup
+	scrolling in popup
+	details popup: add filesize, last read date
+	config: file log level
+	consolidate all jquery files, make sure all loads are local
+	  
+Monitor:
+   watchdog doesn't trigger on file moving out of watched area
+   
+Windows:
+
+Mac:
+
+   
+
    
 
 HTML READER feature requests
