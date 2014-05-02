@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+    {% autoescape None %}
 <html>
     <head>
         <meta charset="utf8">
@@ -50,9 +51,6 @@
                 display:block;
                 border: 1px solid #999;
                 height: 25px;
-                -webkit-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
-                -moz-box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
-                box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
             }
             textarea#folders {
                 width:375px;
@@ -63,9 +61,8 @@
                 display:block;
             }
             
-            input.button {
+            .formbutton {
                 width:100px;
-                position:absolute;
                 right:20px;
                 bottom:20px;
                 background:#09C;
@@ -75,9 +72,29 @@
                 -webkit-border-radius: 15px;
                 -moz-border-radius: 15px;
                 border-radius: 15px;
-                border: 1p solid #999;
+                border: 1px solid #999;
             }
-            input.button:hover {
+            
+            #key_btn {
+                width:70px;
+                left:30px;
+                height:25px;
+                margin-left: 10px;
+            }
+            
+            #submit_btn {
+                margin-top: 10px;
+            }
+            #use_key {
+                width:20px;
+                right:20px;
+                bottom:20px;
+                height:20px;
+            }
+            #api_key {
+                display: inline-block;
+            }
+            .formbutton:hover {
                 background:#fff;
                 color:#09C;
             }
@@ -91,13 +108,32 @@
             $(document).ready(
                 function()
                 {
-                    target_port={{port}};
-                    if (location.port != target_port) 
-                    {    
+                    //target_port=0;
+                    //if (location.port != target_port) 
+                    //{    
                     //    location.port = target_port;
-                    }
+                    //}
+                    use_toggle();
                 }
             );
+            function create_key()
+            {
+                
+                function s4() {
+                  return Math.floor((1 + Math.random()) * 0x10000)
+                             .toString(16)
+                             .substring(1);
+                }
+                var key = s4() + s4() + s4() + s4() +
+                       s4() + s4() + s4() + s4();
+                $("#api_key").val(key);               
+            }
+            function use_toggle()
+            {
+                $("#api_key").prop('disabled', !($("#use_key").is(':checked')));
+                $("#key_btn").prop('disabled', !($("#use_key").is(':checked')));
+
+            }
         </script>       
     </head>
     <body>
@@ -109,24 +145,28 @@
                 {% module xsrf_form_html() %}
                 <div>
                     <label>
-                        <span>Port</span><input id="port" type="text" name="port" value="{{port}}" />
+                        <span>Port</span><input id="port" type="text" name="port" value="{{formdata['port']}}" />
                     </label>
                     
                     <label>
-                        <span>Folders</span> <span class="help">enter one folder per line</span><textarea id="folders" name="folders" >{{folders}}</textarea>
-                        <input type="submit" value="Save" />
+                        <span>Comic Folders</span> <span class="help">enter one folder per line</span><textarea id="folders" name="folders" >{{formdata['folders']}}</textarea>
+                        <span>Username</span><input id="username" type="text" name="username" value="{{formdata['username']}}" />
+                        <span>Password</span><input id="password" type="password" name="password" />
+                        <span>Password</span> <span class="help">re-enter</span><input id="password" type="password" name="password_confirm" />
+                        <span>Use API Key</span><input type="checkbox" name="use_api_key" id="use_key" value="use" onclick="use_toggle()" {{formdata['use_api_key']}}>
+                        <span>API Key</span>
+                            <div>
+                                <input id="api_key" type="text" name="api_key" value="{{formdata['api_key']}}" />
+                                <button type="button" class="formbutton" id="key_btn" onclick="create_key()">Generate</button>
+                            </div>
+                        <input type="submit" id="submit_btn" class="formbutton" value="Save" />
                     </label>
                 
                 </div>
                 <span id="statusbad">{{failure}}</span><span id="statusgood">{{success}}</span>
             </form>
             
-            <div id="tbd">
-                TBD:
-                <li>Set web page user/password</li>
-                <li>Set API key</li>
-            </div>
-            <br>
+
         </div>
         
         <div id=navigation>

@@ -57,11 +57,7 @@ from options import Options
 from bonjour import BonjourThread
 
 def custom_get_current_user(handler):
-    if handler.get_secure_cookie("auth"):
-        if handler.get_secure_cookie("auth") == handler.application.password:
-            return "theuser"
-    else:
-        return None
+    return  handler.get_secure_cookie("user")
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -762,72 +758,109 @@ class ConfigPageHandler(BaseHandler):
             print e
             return True
 
-    def render_config(self, success="", failure=""):
-        folder_str = "\n".join(self.application.config['general']['folder_list'] )
+    def render_config(self, formdata, success="", failure=""):
+        #convert boolean to "checked" or ""
+        formdata['use_api_key'] = "checked" if formdata['use_api_key'] else ""
         self.render("configure.html",
-                    port=self.application.config['general']['port'],
-                    folders=folder_str,
+                    formdata=formdata,
                     success=success,
                     failure=failure)
         
     def get(self):
-        self.render_config()
+        formdata = dict()
+        formdata['port'] = self.application.config['general']['port']
+        formdata['folders'] = "\n".join(self.application.config['general']['folder_list'])
+        formdata['username'] = self.application.config['security']['username']
+        formdata['password'] = ""
+        formdata['password_confirm'] = ""
+        formdata['use_api_key'] = self.application.config['security']['use_api_key'] 
+        formdata['api_key'] = self.application.config['security']['api_key']
+        
+        self.render_config(formdata)
          
     def post(self):
-        port_str = self.get_argument(u"port", default=None)
-        folders_str = self.get_argument(u"folders", default=None)
-        success_str="Saved. Server restart needed"
-        failure_str=""
+        formdata = dict()
+        formdata['port'] = self.get_argument(u"port", default="")
+        formdata['folders'] = self.get_argument(u"folders", default="")
+        formdata['username'] = self.get_argument(u"username", default="")
+        formdata['password'] = self.get_argument(u"password", default="")
+        formdata['password_confirm'] = self.get_argument(u"password_confirm", default="")
+        formdata['use_api_key'] = (len(self.get_arguments("use_api_key"))!=0)
+        formdata['api_key'] = self.get_argument(u"api_key", default="")
+        
+        failure_str = ""
+        success_str = ""
+        failure_strs = list()
         failure = False
         
+        #validate folders exist
         old_folder_list = self.application.config['general']['folder_list']
-        new_folder_list = [os.path.abspath(os.path.normpath(unicode(a))) for a in folders_str.splitlines()]
+        new_folder_list = [os.path.abspath(os.path.normpath(unicode(a))) for a in formdata['folders'].splitlines()]
         for f in new_folder_list:
             if not (os.path.exists(f) and  os.path.isdir(f)):
-                success_str = ""
-                failure_str = u"Folder {0} doesn't exist.  ".format(f)
-                failure = True
+                failure_strs.append(u"Folder {0} doesn't exist.".format(f))
                 break
-                
-        if not failure:    
-            self.application.config['general']['folder_list'] = new_folder_list
-        
-        #TODO validate each folder exists
-        
-        old_port = int(self.application.config['general']['port'])
-        new_port = 0
-        if port_str is not None:
-            try:
 
-                new_port = int(port_str)
-                if new_port > 49151 or new_port < 1024:
-                    success_str = ""
-                    failure_str += u"Port value out of range (1024-4151): {0}".format(new_port)
-                    failure = True
-                else:
-                    if new_port != old_port and not self.is_port_available(new_port):
-                        success_str = ""
-                        failure_str += u"Port not available: {0}".format(new_port)
-                        failure = True
-                    else:    
-                        self.application.config['general']['port'] = new_port
-                #
-            except:
-                success_str = ""
-                failure_str += u"Non-numeric port value: {0}".format(port_str)
-                failure = True                
-                pass                
-    
+        port_failed = False
+        old_port = self.application.config['general']['port']
+
+        #validate numeric port
+        if not formdata['port'].isdigit():
+            port_failed = True
+            failure_strs.append(u"Non-numeric port value: {0}".format(formdata['port']))
+              
+        #validate port range
+        if not port_failed:  
+            new_port = int(formdata['port'])
+            if new_port > 49151 or new_port < 1024:
+                failure_strs.append(u"Port value out of range (1024-4151): {0}".format(new_port))
+                port_failed = True
+
+        #validate port availability
+        if not port_failed:  
+            if new_port != old_port and not self.is_port_available(new_port):
+                failure_strs.append(u"Port not available: {0}".format(new_port))
+                port_failed = True
+          
+        #validate password pair is the same
+        if formdata['password'] != formdata['password_confirm']:
+            failure_strs.append(u"Password fields don't match.")
+
+        if formdata['use_api_key'] and formdata['api_key']=="":
+            failure_strs.append(u"API Key must have a value if the box is checked")
+
+        if len(failure_strs) > 0:
+            failure = True
         if not failure:
-            
-            #if new_port !=old_port:
-            #    self.application.listen(new_port)
-            if new_port == old_port and new_folder_list == old_folder_list:
-                success_str = ""
-            else:
+
+            # find out if we need to save:
+            if (new_port != old_port or
+                new_folder_list != old_folder_list or
+                formdata['username'] != self.application.config['security']['username'] or
+                utils.getDigest(formdata['password']) != self.application.config['security']['password_digest'] or
+                formdata['use_api_key'] != self.application.config['security']['use_api_key'] or
+                formdata['api_key'] != self.application.config['security']['api_key'] 
+               ): 
+                # apply everything from the form
+                self.application.config['general']['folder_list'] = new_folder_list
+                self.application.config['general']['port'] = new_port
+                self.application.config['security']['username'] = formdata['username']
+                self.application.config['security']['password_digest'] = utils.getDigest(formdata['password'])
+                self.application.config['security']['use_api_key'] = formdata['use_api_key']
+                if self.application.config['security']['use_api_key']:
+                    self.application.config['security']['api_key'] = formdata['api_key']
+                else:
+                    self.application.config['security']['api_key'] = ""
+                    formdata['api_key'] = ""
+                    
+                success_str = "Saved. Server restart needed"
                 self.application.config.write()
-                
-        self.render_config(success=success_str, failure=failure_str)
+        else:
+            failure_str = "<br/>".join(failure_strs)
+        formdata['password'] = ""
+        formdata['password_confirm'] = ""
+        
+        self.render_config(formdata, success=success_str, failure=failure_str)
         
 class LoginHandler(BaseHandler):
     def get(self):
@@ -843,8 +876,10 @@ class LoginHandler(BaseHandler):
         if  len(self.get_arguments("password")) != 0:
                 
             #print self.application.password, self.get_argument("password") , next
-            if self.get_argument("password")  ==  self.application.password:
-                self.set_secure_cookie("auth", self.get_argument("password"))
+            if (utils.getDigest(self.get_argument("password"))  ==  self.application.config['security']['password_digest'] and
+                self.get_argument("username")  ==  self.application.config['security']['username']):
+                #self.set_secure_cookie("auth", self.application.config['security']['password_digest'])
+                self.set_secure_cookie("user", self.application.config['security']['username'])
                 
         self.redirect(next)
             
@@ -881,7 +916,6 @@ class APIServer(tornado.web.Application):
         self.bonjour.start()
         
         self.version = csversion.version
-        self.password = "password"
         
         handlers = [
             # Web Pages
@@ -915,13 +949,13 @@ class APIServer(tornado.web.Application):
         settings = dict(
             template_path=os.path.join(ComicStreamerConfig.baseDir(), "templates"),
             static_path=os.path.join(ComicStreamerConfig.baseDir(), "static"),
-            debug=False,
-            autoreload=False,
+            debug=True,
+            #autoreload=False,
             login_url="/login",
-            cookie_secret="13oETzkxqasAyDKl4GEzGeJDJFuYhdhetr2htwjdhewjdhewj2XdTP1o/Vo=",
+            cookie_secret=self.config['security']['cookie_secret'],
             xsrf_cookies=True,
         )
-                
+
         tornado.web.Application.__init__(self, handlers, **settings)
 
         if not opts.no_monitor:     
@@ -937,7 +971,7 @@ class APIServer(tornado.web.Application):
             if ((platform.system() == "Linux" and os.environ.has_key('DISPLAY')) or
                     (platform.system() == "Darwin" and not os.environ.has_key('SSH_TTY')) or
                     platform.system() == "Windows"):
-                webbrowser.open("http://localhost:8888", new=0)
+                webbrowser.open("http://localhost:{0}".format(port), new=0)
 
     def rebuild(self):
         # after restart, purge the DB
