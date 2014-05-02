@@ -73,6 +73,7 @@ class ComicStreamerConfig(ConfigObj):
             username=string(default="admin")
             password_digest=string(default="31ecb8c56818cf6b133e4a8c10fef0da7206d08aaeef49ad3c9be9a092e90dd8")
             api_key=string(default="")
+            use_api_key=boolean(default="True")
             cookie_secret=string(default="")
            """
     
@@ -102,7 +103,8 @@ class ComicStreamerConfig(ConfigObj):
             tmp['general']['install_id'] = uuid.uuid4().hex
             
         #set up the cookie secret
-        tmp['security']['cookie_secret'] = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+        if tmp['security']['cookie_secret'] == '':
+            tmp['security']['cookie_secret'] = base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
 
         # normalize the folder list
         tmp['general']['folder_list'] = [os.path.abspath(os.path.normpath(unicode(a))) for a in tmp['general']['folder_list']]
