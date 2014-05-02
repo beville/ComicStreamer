@@ -340,3 +340,95 @@ ui-tooltip .ui-tooltip-content,
     padding:3px 7px 2px 7px;
     background-color: #DDDDDD;
 }
+
+/*----------------------------------------------*/
+.entry_form    {
+	/*
+	background: -webkit-gradient(linear, bottom, left 175px, from(#CCCCCC), to(#EEEEEE));
+	background: -moz-linear-gradient(bottom, #CCCCCC, #EEEEEE 175px);
+	*/
+	/*margin:auto;*/
+	position:relative;
+	width:550px;
+	height:450px;
+	/*font-family: Tahoma, Geneva, sans-serif;*/
+	font-size: 14px;
+	font-style: italic;
+	line-height: 24px;
+	font-weight: bold;
+	color: #09C;
+	text-decoration: none;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	padding:10px;
+}
+.entry_form .help   {
+	font-size: 12px;
+	font-weight: normal;
+	color: #555555;
+}
+.entry_form #statusbad   {
+	font-weight: normal;
+	color: #aa2222;
+}              
+.entry_form #statusgood   {
+	font-weight: normal;
+	color: #22aa22;
+}              
+.entry_form input    {
+	width:375px;
+	display:block;
+	border: 1px solid #999;
+	height: 25px;
+}
+.entry_form textarea#folders {
+	width:375px;
+	height:75px;
+}
+
+.entry_form textarea#folders {
+	display:block;
+}
+
+.entry_form .formbutton {
+	width:100px;
+	right:20px;
+	bottom:20px;
+	background:#09C;
+	color:#fff;
+	font-family: Tahoma, Geneva, sans-serif;
+	height:30px;
+	-webkit-border-radius: 15px;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+	border: 1px solid #999;
+}
+
+#key_btn {
+	width:70px;
+	left:30px;
+	height:25px;
+	margin-left: 10px;
+}
+
+#submit_btn {
+	margin-top: 10px;
+}
+#use_key {
+	width:20px;
+	right:20px;
+	bottom:20px;
+	height:20px;
+}
+#api_key {
+	display: inline-block;
+}
+.formbutton:hover {
+	background:#fff;
+	color:#09C;
+}
+
+.entry_form textarea:focus, input:focus {
+	border: 1px solid #09C;
+}
