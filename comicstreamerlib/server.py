@@ -56,10 +56,14 @@ from config import ComicStreamerConfig
 from options import Options
 from bonjour import BonjourThread
 
+# to allow a blank username
+def fix_username(username):
+    return  username + "XX"
+
 def custom_get_current_user(handler):
     user = handler.get_secure_cookie("user")
     if user:
-        user = user + "XX"
+        user = fix_username(user)
     return  user
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -67,9 +71,17 @@ class BaseHandler(tornado.web.RequestHandler):
         return custom_get_current_user(self)
     
 class GenericAPIHandler(BaseHandler):
-    pass
+    def validateAPIKey(self):
+        if self.application.config['security']['use_api_key']:
+            api_key = self.get_argument(u"api_key", default="")
+            if api_key == self.application.config['security']['api_key']:
+                return True
+            else:
+                raise tornado.web.HTTPError(400)
+                return False
+    
 
-class JSONResultAPIHandler(BaseHandler):
+class JSONResultAPIHandler(GenericAPIHandler):
     def setContentType(self):
         self.add_header("Content-type","application/json; charset=UTF-8")
 
@@ -273,8 +285,9 @@ class ZippableAPIHandler(JSONResultAPIHandler):
         else:
             self.write(json_data)       
 
-class ControlAPIHandler(GenericAPIHandler):
+class CommandAPIHandler(GenericAPIHandler):
     def get(self):
+        self.validateAPIKey()
         cmd = self.get_argument(u"cmd", default=None)
         if cmd == "restart":
             logging.info("Restart command")
@@ -323,6 +336,7 @@ class ImageAPIHandler(GenericAPIHandler):
             
 class VersionAPIHandler(JSONResultAPIHandler):
     def get(self):
+        self.validateAPIKey()
         response = { 'version': self.application.version,
                     'last_build':  date.today().isoformat() }
         self.setContentType()
@@ -330,6 +344,7 @@ class VersionAPIHandler(JSONResultAPIHandler):
 
 class DBInfoAPIHandler(JSONResultAPIHandler):
     def get(self):
+        self.validateAPIKey()
         session = self.application.dm.Session()
         obj = session.query(DatabaseInfo).first()   
         response = { 'id': obj.uuid,
@@ -342,6 +357,7 @@ class DBInfoAPIHandler(JSONResultAPIHandler):
         
 class ScanStatusAPIHandler(JSONResultAPIHandler):
     def get(self):
+        self.validateAPIKey()
         status = self.application.monitor.status
         detail = self.application.monitor.statusdetail
         last_complete = self.application.monitor.scancomplete_ts
@@ -356,6 +372,7 @@ class ScanStatusAPIHandler(JSONResultAPIHandler):
             
 class ComicListAPIHandler(ZippableAPIHandler):
     def get(self):
+        self.validateAPIKey()
 
         # create a query on all comics
         session = self.application.dm.Session()
@@ -391,6 +408,7 @@ class ComicListAPIHandler(ZippableAPIHandler):
 
 class DeletedAPIHandler(ZippableAPIHandler):
     def get(self):
+        self.validateAPIKey()
     
         # get all deleted comics first
         session = self.application.dm.Session()
@@ -423,7 +441,10 @@ class ComicListBrowserHandler(BaseHandler):
             #    arg_string = '?'+self.request.uri.split('?',1)[1]
             src = default_src + arg_string
         
-        self.render("comic_results2.html", src=src)
+        self.render("comic_results2.html",
+                    src=src,
+                    api_key=self.application.config['security']['api_key']
+                )
 
 class EntitiesBrowserHandler(BaseHandler):
     @tornado.web.authenticated
@@ -432,10 +453,18 @@ class EntitiesBrowserHandler(BaseHandler):
         #if '/' in args:
         #   arg_string = args.split('/',1)[1]
         #print arg_string
-        self.render("entities.html", args=arg_string)
+        #if len(arg_string) == 0:
+        #    arg_string = "?api_key=" + self.application.config['security']['api_key']
+        #else:
+        #    arg_string = arg_string + "&api_key=" + self.application.config['security']['api_key']
+            
+        self.render("entities.html",
+                    args=arg_string,
+                    api_key = self.application.config['security']['api_key'])
 
 class ComicAPIHandler(JSONResultAPIHandler):
     def get(self, id):
+        self.validateAPIKey()
         session = self.application.dm.Session()
         result = session.query(Comic).filter(Comic.id == int(id)).all()
         self.setContentType()
@@ -443,6 +472,7 @@ class ComicAPIHandler(JSONResultAPIHandler):
 
 class ComicBookmarkAPIHandler(JSONResultAPIHandler):
     def get(self, comic_id, pagenum):
+        self.validateAPIKey()
         
         response = { 'status': -1 }
         
@@ -460,6 +490,7 @@ class ComicBookmarkAPIHandler(JSONResultAPIHandler):
         
 class ComicPageAPIHandler(ImageAPIHandler):
     def get(self, comic_id, pagenum):
+        self.validateAPIKey()
         
         image_data = self.getImageData(comic_id, pagenum)
         
@@ -477,6 +508,7 @@ class ComicPageAPIHandler(ImageAPIHandler):
 
 class ThumbnailAPIHandler(ImageAPIHandler):
     def get(self, comic_id):
+        self.validateAPIKey()
         image_data = self.getImageData(comic_id, 0)
         #now resize it
         thumbail_data = self.resizeImage(200, image_data)
@@ -486,6 +518,7 @@ class ThumbnailAPIHandler(ImageAPIHandler):
 
 class FileAPIHandler(GenericAPIHandler):
     def get(self, comic_id):
+        self.validateAPIKey()
 
         #TODO handle errors in this func!
         session = self.application.dm.Session()
@@ -507,6 +540,7 @@ class FileAPIHandler(GenericAPIHandler):
             
 class EntityAPIHandler(JSONResultAPIHandler):
     def get(self, args):            
+        self.validateAPIKey()
         session = self.application.dm.Session()
         
         arglist=args.split('/')
@@ -683,7 +717,12 @@ class ReaderHandler(BaseHandler):
             else:
                 target_page=obj.lastread_page   
                 
-            self.render("cbreader.html", title=title, id=comic_id, count=obj.page_count, page=target_page)
+            self.render("cbreader.html",
+                        title=title,
+                        id=comic_id,
+                        count=obj.page_count,
+                        page=target_page,
+                        api_key=self.application.config['security']['api_key'])
             
         def make_list(self, id, count):
             text = u""
@@ -726,7 +765,8 @@ class MainHandler(BaseHandler):
                     recently_added = list(recently_added_comics),
                     recently_read = list(recently_read_comics),
                     roles = roles_list,
-                    server_time =  int(time.mktime(datetime.utcnow().timetuple()) * 1000)
+                    server_time =  int(time.mktime(datetime.utcnow().timetuple()) * 1000),
+                    api_key = self.application.config['security']['api_key']
                 )
         
 class GenericPageHandler(BaseHandler):
@@ -739,6 +779,10 @@ class AboutPageHandler(BaseHandler):
     def get(self):
         self.render("about.html", version=self.application.version)            
 
+class ControlPageHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.render("control.html", api_key=self.application.config['security']['api_key'])     
 
 class LogPageHandler(BaseHandler):
     
@@ -756,6 +800,8 @@ class LogPageHandler(BaseHandler):
      
 class ConfigPageHandler(BaseHandler):
     
+    fakepass = "N0TRYL@P@SSWRD"
+    
     def is_port_available(self,port):    
         host = '127.0.0.1'
     
@@ -771,16 +817,27 @@ class ConfigPageHandler(BaseHandler):
     def render_config(self, formdata, success="", failure=""):
         #convert boolean to "checked" or ""
         formdata['use_api_key'] = "checked" if formdata['use_api_key'] else ""
+        formdata['use_authentication'] = "checked" if formdata['use_authentication'] else ""
+        if (  self.application.config['security']['use_authentication'] ):
+            formdata['password'] = ConfigPageHandler.fakepass
+            formdata['password_confirm'] = ConfigPageHandler.fakepass
+        else:
+            formdata['password'] = ""
+            formdata['password_confirm'] = ""
+            
         self.render("configure.html",
                     formdata=formdata,
                     success=success,
                     failure=failure)
         
-    @tornado.web.authenticated
+    
+    
+    @tornado.web.authenticated    
     def get(self):
         formdata = dict()
         formdata['port'] = self.application.config['general']['port']
         formdata['folders'] = "\n".join(self.application.config['general']['folder_list'])
+        formdata['use_authentication'] = self.application.config['security']['use_authentication'] 
         formdata['username'] = self.application.config['security']['username']
         formdata['password'] = ""
         formdata['password_confirm'] = ""
@@ -794,6 +851,7 @@ class ConfigPageHandler(BaseHandler):
         formdata = dict()
         formdata['port'] = self.get_argument(u"port", default="")
         formdata['folders'] = self.get_argument(u"folders", default="")
+        formdata['use_authentication'] = (len(self.get_arguments("use_authentication"))!=0)
         formdata['username'] = self.get_argument(u"username", default="")
         formdata['password'] = self.get_argument(u"password", default="")
         formdata['password_confirm'] = self.get_argument(u"password_confirm", default="")
@@ -803,7 +861,7 @@ class ConfigPageHandler(BaseHandler):
         failure_str = ""
         success_str = ""
         failure_strs = list()
-        failure = False
+        validated = False
         
         #validate folders exist
         old_folder_list = self.application.config['general']['folder_list']
@@ -834,6 +892,10 @@ class ConfigPageHandler(BaseHandler):
                 failure_strs.append(u"Port not available: {0}".format(new_port))
                 port_failed = True
           
+        #validate password and username are set
+        if formdata['use_authentication'] and (formdata['username']=="" or formdata['password']==""):
+            failure_strs.append(u"Username and password must be filled in if the 'use authentication' box is checked")
+            
         #validate password pair is the same
         if formdata['password'] != formdata['password_confirm']:
             failure_strs.append(u"Password fields don't match.")
@@ -841,23 +903,35 @@ class ConfigPageHandler(BaseHandler):
         if formdata['use_api_key'] and formdata['api_key']=="":
             failure_strs.append(u"API Key must have a value if the box is checked")
 
-        if len(failure_strs) > 0:
-            failure = True
-        if not failure:
-
+        if len(failure_strs) == 0:
+            validated = True
+            
+        if validated:
+            # was the password changed?
+            password_changed = True
+            if formdata['use_authentication']:
+                if formdata['password'] == ConfigPageHandler.fakepass:
+                    password_changed = False 
+                elif utils.getDigest(formdata['password']) == self.application.config['security']['password_digest']:
+                    password_changed = False
+            else:
+                password_changed = False
+                
             # find out if we need to save:
             if (new_port != old_port or
                 new_folder_list != old_folder_list or
                 formdata['username'] != self.application.config['security']['username'] or
-                utils.getDigest(formdata['password']) != self.application.config['security']['password_digest'] or
+                password_changed or
                 formdata['use_api_key'] != self.application.config['security']['use_api_key'] or
                 formdata['api_key'] != self.application.config['security']['api_key'] 
                ): 
                 # apply everything from the form
                 self.application.config['general']['folder_list'] = new_folder_list
                 self.application.config['general']['port'] = new_port
+                self.application.config['security']['use_authentication'] = formdata['use_authentication']
                 self.application.config['security']['username'] = formdata['username']
-                self.application.config['security']['password_digest'] = utils.getDigest(formdata['password'])
+                if formdata['password'] != ConfigPageHandler.fakepass:
+                    self.application.config['security']['password_digest'] = utils.getDigest(formdata['password'])
                 self.application.config['security']['use_api_key'] = formdata['use_api_key']
                 if self.application.config['security']['use_api_key']:
                     self.application.config['security']['api_key'] = formdata['api_key']
@@ -880,7 +954,15 @@ class LoginHandler(BaseHandler):
             next=self.get_argument("next")
         else:
             next="/"
-        self.render('login.html', next=next)
+            
+        #if password and user are blank, just skip to the "next"
+        if (  self.application.config['security']['password_digest'] == utils.getDigest("")  and
+              self.application.config['security']['username'] == ""
+            ):
+            self.set_secure_cookie("user", fix_username(self.application.config['security']['username']))
+            self.redirect(next)
+        else:    
+            self.render('login.html', next=next)
 
     def post(self):
         next = self.get_argument("next")
@@ -891,7 +973,7 @@ class LoginHandler(BaseHandler):
             if (utils.getDigest(self.get_argument("password"))  ==  self.application.config['security']['password_digest'] and
                 self.get_argument("username")  ==  self.application.config['security']['username']):
                 #self.set_secure_cookie("auth", self.application.config['security']['password_digest'])
-                self.set_secure_cookie("user", self.application.config['security']['username']+"XX")
+                self.set_secure_cookie("user", fix_username(self.application.config['security']['username']))
                 
         self.redirect(next)
             
@@ -924,6 +1006,13 @@ class APIServer(tornado.web.Application):
         
         self.listen(port, no_keep_alive = True)
         
+        #http_server = tornado.httpserver.HTTPServer(self, no_keep_alive = True, ssl_options={
+        #    "certfile": "server.crt",
+        #    "keyfile": "server.key",
+        #})
+        #http_server.listen(port+1)        
+        
+        
         self.bonjour = BonjourThread(port)
         self.bonjour.start()
         
@@ -934,6 +1023,7 @@ class APIServer(tornado.web.Application):
             (r"/", MainHandler),
             (r"/(.*)\.html", GenericPageHandler),
             (r"/about", AboutPageHandler),
+            (r"/control", ControlPageHandler),
             (r"/configure", ConfigPageHandler),
             (r"/log", LogPageHandler),
             (r"/comiclist/browse", ComicListBrowserHandler),
@@ -951,7 +1041,7 @@ class APIServer(tornado.web.Application):
             (r"/comic/([0-9]+)/thumbnail", ThumbnailAPIHandler),
             (r"/comic/([0-9]+)/file", FileAPIHandler),
             (r"/entities/(.*)", EntityAPIHandler),
-            (r"/control", ControlAPIHandler),
+            (r"/command", CommandAPIHandler),
             (r"/scanstatus", ScanStatusAPIHandler),
             (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': "favicon.ico"}),
             (r'/.*', UnknownHandler),
@@ -961,7 +1051,7 @@ class APIServer(tornado.web.Application):
         settings = dict(
             template_path=os.path.join(ComicStreamerConfig.baseDir(), "templates"),
             static_path=os.path.join(ComicStreamerConfig.baseDir(), "static"),
-            debug=True,
+            debug=False,
             #autoreload=False,
             login_url="/login",
             cookie_secret=self.config['security']['cookie_secret'],
