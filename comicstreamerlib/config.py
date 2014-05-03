@@ -70,10 +70,11 @@ class ComicStreamerConfig(ConfigObj):
             install_id=string(default="")
             folder_list=string_list(default=list())
             [security]
+            use_authentication=boolean(default="False")
             username=string(default="")
             password_digest=string(default="1f81ba3766c2287a452d98a28a33892528383ddf3ce570c6b2911b0435e71940")
             api_key=string(default="")
-            use_api_key=boolean(default="True")
+            use_api_key=boolean(default="False")
             cookie_secret=string(default="")
            """
     
