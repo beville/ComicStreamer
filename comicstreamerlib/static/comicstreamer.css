@@ -415,7 +415,7 @@ ui-tooltip .ui-tooltip-content,
 #submit_btn {
 	margin-top: 10px;
 }
-#use_key {
+.entry_form .formcheck {
 	width:20px;
 	right:20px;
 	bottom:20px;
