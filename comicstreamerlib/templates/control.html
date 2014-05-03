@@ -60,7 +60,7 @@
             }
             function do_cmd(cmd)
             {
-                $.getJSON( '/control?cmd='+cmd);
+                $.getJSON( '/command?api_key={{api_key}}&cmd='+cmd);
                 
                 if (cmd == 'restart' ) delay = 2000;
                 if (cmd == 'reset' )   delay = 8000;

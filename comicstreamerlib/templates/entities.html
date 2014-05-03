@@ -11,11 +11,14 @@
             @import "{{ static_url('comicstreamer.css') }}";    
         </style>      
         <script type="text/javascript" language="javascript">
-        
-            var url = '/entities/{{args}}';
+            var nokey_args = '{{args}}';
+
+            args = nokey_args  + '?&api_key={{api_key}}'
+            var url = '/entities/' + args;
+            var nokey_url = '/entities/' + nokey_args;
             var items = [];
             
-            var wordList = url.split('/');
+            var wordList = nokey_args.split('/');
             var lastWord = wordList[wordList.length - 1];
             
             function entity_list_pusher( key, val )
@@ -65,7 +68,7 @@
             if (lastWord == 'comics')
             {
                 // redirect to the comic browser page
-                window.location = "/comiclist/browse?entity_src="+url
+                window.location = "/comiclist/browse?entity_src="+nokey_url
                 //$.getJSON( url, processComicResults);
             }
             else

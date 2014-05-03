@@ -22,7 +22,7 @@
         pages = [];
         for( i=0; i<{{count}}; i++ )
         {
-           pages.push('page/'+i);
+           pages.push('page/'+i+'?api_key={{api_key}}');
         }
         
         target_page = {{page}};
@@ -31,14 +31,14 @@
             location.hash = (target_page+1).toString()
         }
         //set the bookmark
-        $.getJSON( 'page/' + target_page  +'/bookmark')
+        $.getJSON( 'page/' + target_page  +'/bookmark?api_key={{api_key}}')
         
         book=new ComicBook('comic',pages ,
             {  
                 libPath: "{{ static_url('comicbook/js') }}", 
                 displayMode: 'single', 
                 keyboard: { next: 39, previous: 37 },
-                pageTurnCallback: function(page){$.getJSON( 'page/'+(page-1)+'/bookmark')}
+                pageTurnCallback: function(page){$.getJSON( 'page/'+(page-1)+'/bookmarkapi_key={{api_key}}')}
             }
         );
         book.draw();

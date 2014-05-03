@@ -21,10 +21,10 @@
             function populateComicDetails(cd, comic)
             {
                 
-                var thumb_url = '/comic/'+ comic.id +'/thumbnail';
-                var reader_url = '/comic/'+ comic.id +'/reader';
-                var download_url = '/comic/'+ comic.id +'/file';
-                var json_url = '/comic/'+ comic.id;
+                var thumb_url = '/comic/'+ comic.id +'/thumbnail?api_key={{api_key}}';
+                var reader_url = '/comic/'+ comic.id +'/reader?api_key={{api_key}}';
+                var download_url = '/comic/'+ comic.id +'/file?api_key={{api_key}}';
+                var json_url = '/comic/'+ comic.id +'?api_key={{api_key}}';
             
                 $(cd).find('.cd_thumbnail').attr('src', thumb_url);
                 $(cd).find(".cd_reader_link").attr('href', reader_url);
@@ -165,7 +165,15 @@
             
         
             function setupTable()
-            {                
+            {
+                if (location.search.length > 0)
+                {
+                    args = location.search  + '&api_key={{api_key}}';
+                }
+                else
+                {
+                    args = location.search  + '?api_key={{api_key}}';                  
+                }
                 var table_init =
                 {
                     features:
@@ -176,7 +184,7 @@
                     dataset:
                     {
                         ajax: true,
-                        ajaxUrl: '{{src}}'+location.search,
+                        ajaxUrl: '{{src}}'+ args,
                         ajaxOnLoad: true,
                         records: [],
                         //ajaxCache: null,

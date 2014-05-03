@@ -47,7 +47,7 @@
             }
             function fetch_status()
             {
-                $.getJSON( '/scanstatus', processs_status);
+                $.getJSON( '/scanstatus?api_key={{api_key}}', processs_status);
             }
 
             //var date = new Date();
@@ -90,7 +90,7 @@
                 <div id="main_random">
                     <span><h3>Random Pull</h3></span>
                     <a href="/comic/{{random_comic.id}}/reader" target="_blank">
-                                   <img src="/comic/{{random_comic.id}}/thumbnail">
+                                   <img src="/comic/{{random_comic.id}}/thumbnail?api_key={{api_key}}">
                                    <span class="comic_caption">{{random_comic.series}} #{{random_comic.issue}}</span>
                                </a>
                     
@@ -105,7 +105,7 @@
                         {% block comic %}
                             <li>
                                 <a href="/comic/{{comic.id}}/reader" target="_blank">
-                                   <img src="/comic/{{comic.id}}/thumbnail">
+                                   <img src="/comic/{{comic.id}}/thumbnail?api_key={{api_key}}">
                                    <span class="comic_caption">{{comic.series}} #{{comic.issue}}</span>
                                </a>
                             </li>    
@@ -123,7 +123,7 @@
                         {% block comic %}
                             <li>
                                 <a href="/comic/{{comic.id}}/reader" target="_blank">
-                                   <img src="/comic/{{comic.id}}/thumbnail">
+                                   <img src="/comic/{{comic.id}}/thumbnail?api_key={{api_key}}">
                                    <span class="comic_caption">{{comic.series}} #{{comic.issue}}</span>
                                </a>
                             </li>    
