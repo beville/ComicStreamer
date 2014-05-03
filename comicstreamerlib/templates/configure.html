@@ -24,7 +24,8 @@
                     //{    
                     //    location.port = target_port;
                     //}
-                    use_toggle();
+                    use_api_key_toggle();
+                    use_auth_toggle();
                 }
             );
             function create_key()
@@ -39,12 +40,17 @@
                        s4() + s4() + s4() + s4();
                 $("#api_key").val(key);               
             }
-            function use_toggle()
+            function use_api_key_toggle()
             {
                 $("#api_key").prop('disabled', !($("#use_key").is(':checked')));
                 $("#key_btn").prop('disabled', !($("#use_key").is(':checked')));
-
             }
+            function use_auth_toggle()
+            {
+                $("#username").prop('disabled', !($("#use_auth").is(':checked')));
+                $("#password").prop('disabled', !($("#use_auth").is(':checked')));
+                $("#password_confirm").prop('disabled', !($("#use_auth").is(':checked')));
+            }            
         </script>       
     </head>
     <body>
@@ -61,10 +67,11 @@
                     
                     <label>
                         <span>Comic Folders</span> <span class="help">enter one folder per line</span><textarea id="folders" name="folders" >{{formdata['folders']}}</textarea>
+                        <span>Use Authenication</span><input type="checkbox" name="use_authentication" class="formcheck" id="use_auth" value="use" onclick="use_auth_toggle()" {{formdata['use_authentication']}}>
                         <span>Username</span><input id="username" type="text" name="username" value="{{formdata['username']}}" />
-                        <span>Password</span><input id="password" type="password" name="password" />
-                        <span>Password</span> <span class="help">re-enter</span><input id="password" type="password" name="password_confirm" />
-                        <span>Use API Key</span><input type="checkbox" name="use_api_key" id="use_key" value="use" onclick="use_toggle()" {{formdata['use_api_key']}}>
+                        <span>Password</span><input id="password" type="password" name="password" value="{{formdata['password']}}" />
+                        <span>Password</span> <span class="help">re-enter</span><input id="password_confirm" type="password" name="password_confirm" value="{{formdata['password']}}" />
+                        <span>Use API Key</span><input type="checkbox" name="use_api_key" class="formcheck" id="use_key" value="use" onclick="use_api_key_toggle()" {{formdata['use_api_key']}}>
                         <span>API Key</span>
                             <div>
                                 <input id="api_key" type="text" name="api_key" value="{{formdata['api_key']}}" />
