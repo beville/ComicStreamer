@@ -66,7 +66,7 @@ class ComicStreamerConfig(ConfigObj):
 
     configspec = u"""
             [general]
-            port=integer(default=8888)
+            port=integer(default=32500)
             install_id=string(default="")
             folder_list=string_list(default=list())
             [security]
