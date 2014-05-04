@@ -69,6 +69,7 @@ class ComicStreamerConfig(ConfigObj):
             port=integer(default=32500)
             install_id=string(default="")
             folder_list=string_list(default=list())
+            launch_browser=boolean(default="True")
             [security]
             use_authentication=boolean(default="False")
             username=string(default="")
