@@ -818,6 +818,8 @@ class ConfigPageHandler(BaseHandler):
         #convert boolean to "checked" or ""
         formdata['use_api_key'] = "checked" if formdata['use_api_key'] else ""
         formdata['use_authentication'] = "checked" if formdata['use_authentication'] else ""
+        formdata['launch_browser'] = "checked" if formdata['launch_browser'] else ""
+        
         if (  self.application.config['security']['use_authentication'] ):
             formdata['password'] = ConfigPageHandler.fakepass
             formdata['password_confirm'] = ConfigPageHandler.fakepass
@@ -843,6 +845,7 @@ class ConfigPageHandler(BaseHandler):
         formdata['password_confirm'] = ""
         formdata['use_api_key'] = self.application.config['security']['use_api_key'] 
         formdata['api_key'] = self.application.config['security']['api_key']
+        formdata['launch_browser'] = self.application.config['general']['launch_browser']
         
         self.render_config(formdata)
          
@@ -857,6 +860,7 @@ class ConfigPageHandler(BaseHandler):
         formdata['password_confirm'] = self.get_argument(u"password_confirm", default="")
         formdata['use_api_key'] = (len(self.get_arguments("use_api_key"))!=0)
         formdata['api_key'] = self.get_argument(u"api_key", default="")
+        formdata['launch_browser'] = (len(self.get_arguments("launch_browser"))!=0)
         
         failure_str = ""
         success_str = ""
@@ -923,7 +927,8 @@ class ConfigPageHandler(BaseHandler):
                 formdata['username'] != self.application.config['security']['username'] or
                 password_changed or
                 formdata['use_api_key'] != self.application.config['security']['use_api_key'] or
-                formdata['api_key'] != self.application.config['security']['api_key'] 
+                formdata['api_key'] != self.application.config['security']['api_key'] or
+                formdata['launch_browser'] != self.application.config['general']['launch_browser'] 
                ): 
                 # apply everything from the form
                 self.application.config['general']['folder_list'] = new_folder_list
@@ -938,6 +943,7 @@ class ConfigPageHandler(BaseHandler):
                 else:
                     self.application.config['security']['api_key'] = ""
                     formdata['api_key'] = ""
+                self.application.config['general']['launch_browser'] = formdata['launch_browser']
                     
                 success_str = "Saved. Server restart needed"
                 self.application.config.write()
@@ -1007,7 +1013,9 @@ class APIServer(tornado.web.Application):
             self.listen(self.port, no_keep_alive = True)
         except Exception as e:
             logging.error(e)
-            logging.error("Couldn't open socket on port {0}.  (Maybe ComicStreamer is already running?)  Quitting.".format(self.port))
+            msg = "Couldn't open socket on port {0}.  (Maybe ComicStreamer is already running?)  Quitting.".format(self.port)
+            logging.error(msg)
+            utils.alert("Port not available", msg)
             sys.exit(-1)
 
         logging.info( "Stream server running on port {0}...".format(self.port))
@@ -1071,7 +1079,7 @@ class APIServer(tornado.web.Application):
             self.monitor.start()
             self.monitor.scan()
             
-        if opts.launch_browser:
+        if opts.launch_browser and self.config['general']['launch_browser']:
             if ((platform.system() == "Linux" and os.environ.has_key('DISPLAY')) or
                     (platform.system() == "Darwin" and not os.environ.has_key('SSH_TTY')) or
                     platform.system() == "Windows"):
