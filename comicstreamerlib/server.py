@@ -984,14 +984,13 @@ class APIServer(tornado.web.Application):
         self.config = config
         self.opts = opts
         
-        port = self.config['general']['port']
-        signal.signal(signal.SIGINT, self.signal_handler)
+        self.port = self.config['general']['port']
+        
         
         #if len(self.config['general']['folder_list']) == 0:
         #    logging.error("No folders on either command-line or config file.  Quitting.")
         #    sys.exit(-1)
         
-        logging.info( "Stream server running on port {0}...".format(port))
         self.dm = DataManager()
         
         if opts.reset or opts.reset_and_run:
@@ -1004,18 +1003,21 @@ class APIServer(tornado.web.Application):
             
         self.dm.create()
         
-        self.listen(port, no_keep_alive = True)
+        try:
+            self.listen(self.port, no_keep_alive = True)
+        except Exception as e:
+            logging.error(e)
+            logging.error("Couldn't open socket on port {0}.  (Maybe ComicStreamer is already running?)  Quitting.".format(self.port))
+            sys.exit(-1)
+
+        logging.info( "Stream server running on port {0}...".format(self.port))
         
         #http_server = tornado.httpserver.HTTPServer(self, no_keep_alive = True, ssl_options={
         #    "certfile": "server.crt",
         #    "keyfile": "server.key",
         #})
         #http_server.listen(port+1)        
-        
-        
-        self.bonjour = BonjourThread(port)
-        self.bonjour.start()
-        
+         
         self.version = csversion.version
         
         handlers = [
@@ -1047,7 +1049,7 @@ class APIServer(tornado.web.Application):
             (r'/.*', UnknownHandler),
             
         ]
-        
+
         settings = dict(
             template_path=os.path.join(ComicStreamerConfig.baseDir(), "templates"),
             static_path=os.path.join(ComicStreamerConfig.baseDir(), "static"),
@@ -1073,7 +1075,7 @@ class APIServer(tornado.web.Application):
             if ((platform.system() == "Linux" and os.environ.has_key('DISPLAY')) or
                     (platform.system() == "Darwin" and not os.environ.has_key('SSH_TTY')) or
                     platform.system() == "Windows"):
-                webbrowser.open("http://localhost:{0}".format(port), new=0)
+                webbrowser.open("http://localhost:{0}".format(self.port), new=0)
 
     def rebuild(self):
         # after restart, purge the DB
@@ -1099,9 +1101,6 @@ class APIServer(tornado.web.Application):
         else:
             new_argv.insert(0, os.path.basename(sys.argv[0]) )
             os.execl(executable, executable, *new_argv)    
-        
-    def signal_handler(self, signal, frame):
-        self.shutdown()
         
     def shutdown(self):
         
@@ -1137,53 +1136,11 @@ class APIServer(tornado.web.Application):
         log_method("%d %s %.2fms", handler.get_status(),
                    handler._request_summary(), request_time)
         
-
-def main():
-    utils.fix_output_encoding()
+    def run(self):
+        tornado.ioloop.IOLoop.instance().start()
     
-    #Configure logging
-    # root level        
-    logger = logging.getLogger()    
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    
-    log_file = os.path.join(ComicStreamerConfig.getUserFolder(), "logs", "ComicStreamer.log")
-    if not os.path.exists(os.path.dirname(log_file)):
-        os.makedirs(os.path.dirname(log_file))
-    fh = logging.handlers.RotatingFileHandler(log_file, maxBytes=1048576, backupCount=4, encoding="UTF8")
-    fh.setLevel(logging.DEBUG)
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
-    
-    # By default only do info level to console
-    sh = logging.StreamHandler(sys.stdout)
-    sh.setLevel(logging.INFO)
-    sh.setFormatter(formatter)
-    logger.addHandler(sh)
-
-    config = ComicStreamerConfig()
-    opts = Options()
-    opts.parseCmdLineArgs()
-
-    # set file logging according to config file
-    #fh.setLevel(config['general']['loglevel'])
-        
-    # turn up the log level, if requested
-    if opts.debug:
-        sh.setLevel(logging.DEBUG)
-    elif opts.quiet:
-        sh.setLevel(logging.CRITICAL)
-
-    config.applyOptions(opts)
-    
-    app = APIServer(config, opts)
-
-    app.logFileHandler = fh
-    app.logConsoleHandler = sh    
-    
-    tornado.ioloop.IOLoop.instance().start()
-
-
-if __name__ == "__main__":
-    main()
+    def runInThread(self):
+        import threading
+        t = threading.Thread(target=self.run)
+        t.start()
 
