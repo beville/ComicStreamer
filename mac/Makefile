@@ -1,6 +1,6 @@
 #PYINSTALLER_CMD := VERSIONER_PYTHON_PREFER_32_BIT=yes arch -i386 python $(HOME)/pyinstaller-2.0/pyinstaller.py
 PYINSTALLER_CMD := python ../../pyinstaller-develop/pyinstaller.py
-STREAMER_BASE ?= $(HOME)/Dropbox/streamer/cs
+STREAMER_BASE ?= ..
 STREAMER_SRC := $(STREAMER_BASE)/comicstreamerlib
 
 APP_NAME := ComicStreamer
