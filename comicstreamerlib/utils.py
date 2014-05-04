@@ -28,6 +28,7 @@ import codecs
 import calendar
 import hashlib
 import time
+
 from datetime import datetime, timedelta
 	
 class UtilsVars:
@@ -83,8 +84,6 @@ def get_recursive_filelist( pathlist ):
 def touch(fname, times=None):
     with open(fname, 'a'):
         os.utime(fname, times)
-import hashlib
-import os
 
 def getDigest(password):
     digest = hashlib.sha256(password).hexdigest()
@@ -98,4 +97,20 @@ def utc_to_local(utc_dt):
     timestamp = calendar.timegm(utc_dt.timetuple())
     local_dt = datetime.fromtimestamp(timestamp)
     assert utc_dt.resolution >= timedelta(microseconds=1)
-    return local_dt.replace(microsecond=utc_dt.microsecond)		
+    return local_dt.replace(microsecond=utc_dt.microsecond)
+
+def alert(title, msg):
+    if getattr(sys, 'frozen', None):
+        if platform.system() == "Darwin":
+            import Tkinter, tkMessageBox
+            root = Tkinter.Tk()
+            root.lift()
+            root.attributes('-topmost', 1)
+            root.withdraw()
+            tkMessageBox.showinfo(title, msg)
+        elif platform.system() == "Windows":
+            import win32gui
+            win32gui.MessageBox(0,msg,title,0)
+
+
+
