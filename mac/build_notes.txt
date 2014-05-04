@@ -1,0 +1,6 @@
+Some tweaks that were neeeded:
+	After the full build of PyObjC, needed to add a __init__.py file in PyObjCTools folder
+	Needed to add extra "import" statements to rumps.py: AppKit, Foundation
+	Needed to rebuild the Pyinstaller Mac 32-bit bootloader after removing the line to run the app in the foreground
+
+
