@@ -12,8 +12,7 @@ all: clean dist package
 
 dist:
 	cd "$(STREAMER_BASE)" &
-		"C:\Python27\Scripts\cxfreeze.bat" $(STREAMER_BASE)\comicstreamer --icon nsis\app.ico
-#--base-name=Win32GUI 
+		"C:\Python27\Scripts\cxfreeze.bat" $(STREAMER_BASE)\comicstreamer --icon nsis\app.ico --base-name=Win32GUI 
 	cp "$(STREAMER_BASE)\libs\comictaggerlib\UnRAR2\UnRARDLL\unrar.dll" $(DIST_DIR)
 	cp -r "$(STREAMER_SRC)\templates" $(DIST_DIR)
 	cp -r "$(STREAMER_SRC)\static" $(DIST_DIR)
