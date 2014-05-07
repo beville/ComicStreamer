@@ -15,7 +15,7 @@ import win32api
 import win32con
 import win32gui_struct
 
-from config import ComicStreamerConfig
+from comicstreamerlib.folders import AppFolders
 
 try:
     import winxpgui as win32gui
@@ -40,7 +40,7 @@ class WinGui(object):
         
         self.apiServer = apiServer
         
-        self.icon = os.path.join(ComicStreamerConfig.baseDir(),"images", "trout.ico")
+        self.icon = AppFolders.imagePath("trout.ico")
         self.hover_text = "ComicStreamer"
         self.on_quit = self.bye    
             

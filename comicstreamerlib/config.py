@@ -32,37 +32,9 @@ from validate import Validator
 
 from options import Options
 from libs.comictaggerlib.utils import which, addtopath
+from comicstreamerlib.folders import AppFolders
 
 class ComicStreamerConfig(ConfigObj):
-
-    @staticmethod
-    def getUserFolder():
-        filename_encoding = sys.getfilesystemencoding()
-        if platform.system() == "Windows":
-            folder = os.path.join( os.environ['APPDATA'], 'ComicStreamer' )
-        elif platform.system() == "Darwin":
-            folder = os.path.join( os.path.expanduser('~') , 'Library/Application Support/ComicStreamer')
-        else:
-            folder = os.path.join( os.path.expanduser('~') , '.ComicStreamer')
-        if folder is not None:
-            folder = folder.decode(filename_encoding)
-        return folder
-        
-    frozen_win_exe_path = None
-    
-    @staticmethod
-    def baseDir():
-        encoding = sys.getfilesystemencoding()
-        if getattr(sys, 'frozen', None):
-            if platform.system() == "Darwin":
-                return sys._MEIPASS
-            else: # Windows
-                #Preserve this value, in case sys.argv gets changed importing a plugin script
-                if ComicStreamerConfig.frozen_win_exe_path is None:
-                    ComicStreamerConfig.frozen_win_exe_path = os.path.dirname( os.path.abspath( unicode(sys.executable, encoding) ) )
-                return ComicStreamerConfig.frozen_win_exe_path    
-        else:
-            return os.path.dirname( os.path.abspath(unicode(__file__, encoding)) )
 
     configspec = u"""
             [general]
@@ -70,6 +42,7 @@ class ComicStreamerConfig(ConfigObj):
             install_id=string(default="")
             folder_list=string_list(default=list())
             launch_browser=boolean(default="True")
+            first_run=boolean(default="True")            
             [security]
             use_authentication=boolean(default="False")
             username=string(default="")
@@ -83,7 +56,7 @@ class ComicStreamerConfig(ConfigObj):
     def __init__(self):
         super(ComicStreamerConfig, self).__init__()
                
-        self.csfolder = ComicStreamerConfig.getUserFolder()
+        self.csfolder = AppFolders.settings()
 
         # make sure folder exisits
         if not os.path.exists( self.csfolder ):
@@ -119,7 +92,7 @@ class ComicStreamerConfig(ConfigObj):
         # if mac app, and no unrar in path, add the one from the app bundle
         if getattr(sys, 'frozen', None) and  platform.system() == "Darwin":
             if which("unrar") is None:
-                addtopath(ComicStreamerConfig.baseDir())
+                addtopath(AppFolders.appBase())
         
     def applyOptions( self, opts ):
 

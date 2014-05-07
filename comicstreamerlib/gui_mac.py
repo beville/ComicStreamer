@@ -4,13 +4,13 @@ from PyObjCTools import AppHelper
 import webbrowser
 import os
 
-from config import ComicStreamerConfig
+from comicstreamerlib.folders import AppFolders
 
 rumps.debug_mode(True)  # turn on command line logging information for development - default is off
 
 class MacGui(rumps.App):
     def __init__(self, apiServer):
-        super(MacGui, self).__init__("ComicStreamer", icon=os.path.join(ComicStreamerConfig.baseDir(),"images", "trout.png"))
+        super(MacGui, self).__init__("ComicStreamer", icon=AppFolders.imagePath("trout.png"))
         self.apiServer =  apiServer
         
         self.menu = [

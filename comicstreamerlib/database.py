@@ -9,6 +9,7 @@ import logging
 import os
 
 from config import ComicStreamerConfig
+from comicstreamerlib.folders import AppFolders
 
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
@@ -340,7 +341,7 @@ class DatabaseInfo(Base):
                     
 class DataManager():
     def __init__(self):
-        self.dbfile = os.path.join(ComicStreamerConfig.getUserFolder(), "comicdb.sqlite")
+        self.dbfile = os.path.join(AppFolders.appData(), "comicdb.sqlite")
 
     def delete(self):
         if os.path.exists( self.dbfile ):

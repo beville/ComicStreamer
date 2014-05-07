@@ -32,7 +32,8 @@ from  sqlalchemy.sql.expression import func, select
 import json
 import pprint
 import mimetypes
-import Image
+from PIL import Image
+from PIL import WebPImagePlugin
 import StringIO
 import gzip
 import dateutil.parser
@@ -53,6 +54,7 @@ import utils
 from database import *
 from monitor import Monitor
 from config import ComicStreamerConfig
+from comicstreamerlib.folders import AppFolders
 from options import Options
 from bonjour import BonjourThread
 
@@ -304,13 +306,14 @@ class ImageAPIHandler(GenericAPIHandler):
         
         imtype = imghdr.what(StringIO.StringIO(image_data))
         self.add_header("Content-type","image/{0}".format(imtype))
+        print imtype
     
     def getImageData(self, comic_id, pagenum):
         #TODO handle errors in this func!
         session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         image_data = None
-        default_img_file = os.path.join(ComicStreamerConfig.baseDir(),"images", "default.jpg")
+        default_img_file = AppFolders.imagePath("default.jpg")
 
         if obj is not None:
             if int(pagenum) < obj.page_count:
@@ -329,7 +332,7 @@ class ImageAPIHandler(GenericAPIHandler):
         if max < h:
             im.thumbnail((w,max), Image.ANTIALIAS)
             output = StringIO.StringIO()
-            im.save(output, format="PNG")
+            im.save(output, format="JPEG")
             return output.getvalue()
         else:
             return image_data
@@ -524,7 +527,7 @@ class FileAPIHandler(GenericAPIHandler):
         session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         if obj is not None:
-            ca = ComicArchive(obj.path, os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"))
+            ca = ComicArchive(obj.path, AppFolders.imagePath("default.jpg"))
             if ca.isZip():
                 self.add_header("Content-type","application/zip, application/octet-stream")
             else:
@@ -789,7 +792,7 @@ class LogPageHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
 
-        log_file = os.path.join(ComicStreamerConfig.getUserFolder(), "logs", "ComicStreamer.log")
+        log_file = os.path.join(AppFolders.logs(), "ComicStreamer.log")
         
         logtxt = ""
         for line in reversed(open(log_file).readlines()):
@@ -1059,8 +1062,8 @@ class APIServer(tornado.web.Application):
         ]
 
         settings = dict(
-            template_path=os.path.join(ComicStreamerConfig.baseDir(), "templates"),
-            static_path=os.path.join(ComicStreamerConfig.baseDir(), "static"),
+            template_path=os.path.join(AppFolders.appBase(), "templates"),
+            static_path=os.path.join(AppFolders.appBase(), "static"),
             debug=False,
             #autoreload=False,
             login_url="/login",

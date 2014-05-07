@@ -1,7 +1,7 @@
 import sys
 import webbrowser
 import os
-from config import ComicStreamerConfig
+from comicstreamerlib.folders import AppFolders
 
 from PyQt4 import QtGui,QtCore
 
@@ -25,7 +25,7 @@ class QtBasedGui():
         
         self.app = QtGui.QApplication(sys.argv)
         
-        pixmap = QtGui.QPixmap(os.path.join(ComicStreamerConfig.baseDir(),"images", "trout.png"))
+        pixmap = QtGui.QPixmap(AppFolders.imagePath("trout.png"))
         icon = QtGui.QIcon( pixmap.scaled(16,16))       
 
         self.trayIcon = SystemTrayIcon(icon,self)

@@ -164,7 +164,7 @@ class Monitor():
         
         #print time.time() - start_time, "seconds"
 
-        ca = ComicArchive(path,  default_image_path=os.path.join(ComicStreamerConfig.baseDir(),"images/default.jpg"))
+        ca = ComicArchive(path,  default_image_path=AppFolders.imagePath("default.jpg"))
         
         if ca.seemsToBeAComicArchive():
             #print >>  sys.stdout, u"Adding {0}...     \r".format(count),

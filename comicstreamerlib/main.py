@@ -30,6 +30,7 @@ import signal
 
 import utils
 from config import ComicStreamerConfig
+from comicstreamerlib.folders import AppFolders
 from options import Options
 from server import APIServer
 from bonjour import BonjourThread
@@ -54,7 +55,7 @@ class Launcher():
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         
-        log_file = os.path.join(ComicStreamerConfig.getUserFolder(), "logs", "ComicStreamer.log")
+        log_file = os.path.join(AppFolders.logs(), "ComicStreamer.log")
         if not os.path.exists(os.path.dirname(log_file)):
             os.makedirs(os.path.dirname(log_file))
         fh = logging.handlers.RotatingFileHandler(log_file, maxBytes=1048576, backupCount=4, encoding="UTF8")
