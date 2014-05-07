@@ -306,7 +306,6 @@ class ImageAPIHandler(GenericAPIHandler):
         
         imtype = imghdr.what(StringIO.StringIO(image_data))
         self.add_header("Content-type","image/{0}".format(imtype))
-        print imtype
     
     def getImageData(self, comic_id, pagenum):
         #TODO handle errors in this func!
