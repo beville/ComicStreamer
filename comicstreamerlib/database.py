@@ -217,9 +217,10 @@ class Comic(Base):
         out_dict = {}
         # iterate over the list of credits mini dicts:
         for c in self.credits_raw:
-            if not out_dict.has_key(c.role.name):
-                out_dict[c.role.name] = []
-            out_dict[c.role.name].append(c.person.name)
+            if c.role:
+                if not out_dict.has_key(c.role.name):
+                    out_dict[c.role.name] = []
+                out_dict[c.role.name].append(c.person.name)
         
         return out_dict
 
