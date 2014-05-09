@@ -22,17 +22,16 @@ ComicStreamer is very early ALPHA stages, and may be very flakey, eating up memo
 * sqlalchemy >= 0.9
 * watchdog
 * python-dateutil
-* PIL
+* pillow (PIL fork)
 * configobj >= 5.0.5
-   
-(Note: on some ubuntu releases it may be better to get PIL from ubuntu apt package "python-imaging", rather than via pip)
+
 
 ------
 #### Installation
 
 Just unzip somewhere. 
 
-(Eventually, there will be native build packages for Mac OS and Windows)
+(Eventually, there will be native build packages for Mac OS and Windows, as well as setup.py)
 
 Settings, database, and logs are kept in the user folder:
 
@@ -45,10 +44,10 @@ Settings, database, and logs are kept in the user folder:
 
 Just run "comicstreamer" in the base folder (on windows you may want to rename it comicstreamer.py)
 
-A web browser should automatically open to "http://localhost:8888"
+A web browser should automatically open to "http://localhost:32500"
 
 Some tips:
 
-* Use "--help" option to list options
+* Use "--help" option to list command-line options
 * Use the "config" page to set the comic folders, and the "control" page to restart the server
 * Use the "--reset" option to wipe the database
