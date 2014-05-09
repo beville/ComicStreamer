@@ -1,43 +1,44 @@
 Priority:
-   first run brings up dialog, and goes to config page
-   thread for managing bookmarking. need to add mutexes around all commits
+	thread for managing bookmarking. need to add mutexes around all commits
+	send proper content type in respnse header
 ----------------
 OS Integration:
-   Mac OS :
-   Windows:
-	  make taskbar active so it's shown?
-	  windows service?
-   Linux:
-	  init script to run as server
-	    need to have different calls to get config location, log location, and app data location
-	  	 /etc/ComicStreamer
-		 /var/log/
-		 /var/lib/ComicStreamer
+	Mac OS :
+	Windows:
+		make taskbar active so it's shown?
+		windows service?
+	Linux:
+		init script to run as server
 ------------------
 Database:
    Versioning scheme?? (migrate or rebuild with each change?)
    bug: per_page setting slice off child lists...?? (mitigated by ordering
    bug: possible cascade confusion on lots of deletes/adds
+   bug: wrong counts on person query (with multiple roles for person) with per_page set
 ----------------
 General Server:
-   more efficient queries (less joins, less selects)
-   look into https
+	more efficient queries (less joins, less selects)
+	look into https
 		need to provide default key and cert files, but offer option for user-supplied
 ------------------
 API:
-   Versioning scheme!
-   proper sorting by issue number (numeric, not string)
-   selective fields
-   search with OR / AND in field
-   filter by genre
+	Versioning scheme!
+	proper sorting by issue number (numeric, not string)
+	selective fields
+	search with OR / AND in field
+	filter by genre
+	broswe folder heirarchy
 
 Entity API:
-      entity list:
-	  genre
-		 year? (or decade?)
-	  restore role
+
+	entity list:
+	genre
+	   year? (or decade?)
+	restore role
 ---------------------------      
 Web UI:
+	if first run, dialog on config page to suggest security
+	if no folders set, dialog on main page to go to config
 	tags in popup
 	scrolling in popup
 	details popup: add filesize, last read date
@@ -45,20 +46,11 @@ Web UI:
 	consolidate all jquery files, make sure all loads are local
 	  
 Monitor:
-   watchdog doesn't trigger on file moving out of watched area
+	watchdog doesn't trigger on file moving out of watched area
    
 Windows:
 
 Mac:
-
-
-HTML READER feature requests
-   pass in metadata or HTML text/element for display via toolbar
-   keystrokes for zooming in/out
-   page turn callback function (for bookmark)
-   general touch/mobile interface
-   show page number and/or progress bar
-
 
 ------------------------
 
@@ -68,74 +60,9 @@ Requirements:
    sqlalchemy >= 0.9
    watchdog
    python-dateutil
-   PIL
+   pillow
    configobj >= 5.0.5
 http://stackoverflow.com/questions/20060096/installing-pil-with-pip
 
-   pybonjour
-	  sudo apt-get install libavahi-compat-libdnssd1
--------------------
-Bonus SQL!
--------------------
-CREATE VIEW credits_view AS
-select comics.id, persons.name as person, roles.name as role
-from comics 
-inner join credits
-   on credits.comic_id=comics.id
-inner join persons
-   on credits.person_id=persons.id
-inner join roles 
-   on credits.role_id=roles.id
-where comics.id=1 
--------------------
-
-
-Convert single item query to simple list
-      [i[0] for i in list(q)]
-
-import pdb; pdb.set_trace()
-will enter the python debugger at that point
-
-import code; code.interact(local=locals())  ####ATB Debug    
-      
-c=s.query(Comic).join(Credit).join(Role).join(Person).filter(Role.name=="penciller").filter(Person.name=="Jeff Lemire")
-
-s.query(Comic).join(Credit).join(Person).filter(Person.name=='Jeff Lemire').filter(Credit.person_id==Person.id).filter(Credit.role_id==Role.id).filter(Role.name=='writer')
-
-person='Jeff Lemire'
-role='penciller'
-q = s.query(Comic)
-q = q.join(Credit).filter(Person.name==person).filter(Credit.person_id==Person.id)
-q = q.filter(Credit.role_id==Role.id).filter(Role.name==role)
-q.count()
-
---------------------
-      //--------------------------------------------------
-      //!!!ATB - personal hack for sorting and searching with comicstreamer
-      if ("sorts" in options.data)
-      {
-        name = Object.keys(options.data.sorts)[0];
-        desc = '';
-        if (options.data.sorts[name]==-1)
-        {
-          desc = '-';
-        }
-        options.data.order = desc+name;
-      }
-      if ("queries" in options.data)
-      {
-        for (var key in options.data.queries) {
-          if (options.data.queries.hasOwnProperty(key))
-          {
-            newkey = key;
-            if (key == 'search')
-            {
-              newkey = 'keyphrase';
-            }
-            // move the item from queries up one level
-            options.data[newkey] = options.data.queries[key];
-          }
-        }        
-      }
-      //--------------------------------------------------
-      $.ajax(options);
+	pybonjour
+		sudo apt-get install libavahi-compat-libdnssd1
