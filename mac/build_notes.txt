@@ -1,5 +1,30 @@
+Prepping a fresh mac for CS and CT:
+
+Works with Snow Leopard 32 or 64:
+
+#install XCode
+#install homebrew
+
+brew install git
+brew install webp
+brew install pyqt
+brew install homebrew/python/pillow
+pip install configobj
+pip install configparser
+pip install python-dateutil
+pip install watchdog
+pip install tornado
+pip install sqlalchemy
+pip install pybonjour --allow-external pybonjour --allow-unverified pybonjour
+
+pip install pyobjc-core
+pip install pyobjc
+
+#-------------------------
+
+
 Some tweaks that were neeeded:
-	After the full build of PyObjC, needed to add a __init__.py file in PyObjCTools folder
+	After the full build/install of PyObjC, needed to add a __init__.py file in PyObjCTools folder
 	Needed to add extra "import" statements to rumps.py: AppKit, Foundation
 	Needed to rebuild the Pyinstaller Mac 32-bit bootloader after removing the line to run the app in the foreground
 
