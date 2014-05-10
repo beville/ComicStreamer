@@ -59,6 +59,13 @@ from options import Options
 from bonjour import BonjourThread
 from bookmarker import Bookmarker
 
+# add webp test to imghdr in case it isn't there already
+def my_test_webp(h, f):
+    if h.startswith(b'RIFF') and h[8:12] == b'WEBP':
+        return 'webp'
+imghdr.tests.append(my_test_webp)
+
+
 # to allow a blank username
 def fix_username(username):
     return  username + "XX"

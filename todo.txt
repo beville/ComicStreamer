@@ -1,5 +1,5 @@
 Priority:
-    send proper content type in respnse header
+
 ----------------
 OS Integration:
     Mac OS :
