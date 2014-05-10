@@ -1,38 +1,37 @@
 Priority:
-	thread for managing bookmarking. need to add mutexes around all commits
-	send proper content type in respnse header
+    send proper content type in respnse header
 ----------------
 OS Integration:
-	Mac OS :
-	Windows:
-		make taskbar active so it's shown?
-		windows service?
-	Linux:
-		init script to run as server
+    Mac OS :
+    Windows:
+        make taskbar active so it's shown?
+        windows service?
+    Linux:
+        init script to run as server
 ------------------
 Database:
-   Versioning scheme?? (migrate or rebuild with each change?)
-   bug: per_page setting slice off child lists...?? (mitigated by ordering
-   bug: possible cascade confusion on lots of deletes/adds
-   bug: wrong counts on person query (with multiple roles for person) with per_page set
+    Versioning scheme?? (migrate or rebuild with each change?)
+    bug: per_page setting slice off child lists...?? (mitigated by ordering
+    bug: possible cascade confusion on lots of deletes/adds
+    bug: wrong counts on person query (with multiple roles for person) with per_page set
 ----------------
 General Server:
-	more efficient queries (less joins, less selects)
-	look into https
-		need to provide default key and cert files, but offer option for user-supplied
+    more efficient queries (less joins, less selects)
+    look into https
+        need to provide default key and cert files, but offer option for user-supplied
 ------------------
 API:
-	Versioning scheme!
-	proper sorting by issue number (numeric, not string)
-	selective fields
-	search with OR / AND in field
-	filter by genre
-	broswe folder heirarchy
+    Versioning scheme!
+    proper sorting by issue number (numeric, not string)
+    selective fields
+    search with OR / AND in field
+    filter by genre
+    broswe folder heirarchy
 
 Entity API:
 
-	entity list:
-	genre
+    entity list:
+    genre
 	   year? (or decade?)
 	restore role
 ---------------------------      

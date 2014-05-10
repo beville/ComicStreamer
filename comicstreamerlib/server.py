@@ -57,6 +57,7 @@ from config import ComicStreamerConfig
 from comicstreamerlib.folders import AppFolders
 from options import Options
 from bonjour import BonjourThread
+from bookmarker import Bookmarker
 
 # to allow a blank username
 def fix_username(username):
@@ -476,18 +477,10 @@ class ComicBookmarkAPIHandler(JSONResultAPIHandler):
     def get(self, comic_id, pagenum):
         self.validateAPIKey()
         
-        response = { 'status': -1 }
-        
-        session = self.application.dm.Session()
-        obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
-        if obj is not None:
-            if int(pagenum) < obj.page_count:
-                obj.lastread_ts = datetime.utcnow()
-                obj.lastread_page = int(pagenum)
-                session.commit()   
-                response['status'] = 0
-                
+        self.application.bookmarker.setBookmark(comic_id, pagenum)
+    
         self.setContentType()
+        response = { 'status': 0 }
         self.write(response)
         
 class ComicPageAPIHandler(ImageAPIHandler):
@@ -1081,6 +1074,9 @@ class APIServer(tornado.web.Application):
             self.monitor.start()
             self.monitor.scan()
             
+        self.bookmarker = Bookmarker(self.dm)
+        self.bookmarker.start()
+
         if opts.launch_browser and self.config['general']['launch_browser']:
             if ((platform.system() == "Linux" and os.environ.has_key('DISPLAY')) or
                     (platform.system() == "Darwin" and not os.environ.has_key('SSH_TTY')) or
@@ -1118,6 +1114,7 @@ class APIServer(tornado.web.Application):
 
         logging.info('Initiating shutdown...')
         self.monitor.stop()
+        self.bookmarker.stop()
      
         logging.info('Will shutdown ComicStreamer in maximum %s seconds ...', MAX_WAIT_SECONDS_BEFORE_SHUTDOWN)
         io_loop = tornado.ioloop.IOLoop.instance()
