@@ -235,6 +235,8 @@ class Monitor():
                 comic.series   = unicode(md.series)
             if md.issue is not None:
                 comic.issue = unicode(md.issue)
+                comic.issue_num = IssueString(unicode(comic.issue)).asFloat()   
+     
             if md.year is not None:
                 try:
                     day = 1   
