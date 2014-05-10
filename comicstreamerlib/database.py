@@ -14,7 +14,7 @@ from comicstreamerlib.folders import AppFolders
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, DateTime, Table, ForeignKey
+from sqlalchemy import Column, Integer, Float, String, DateTime, Table, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine, func
 from sqlalchemy.ext.declarative import DeclarativeMeta
@@ -146,6 +146,7 @@ class Comic(Base):
     path = Column(String, unique=True)
     series = Column(String)
     issue = Column(String)
+    issue_num = Column(Float)
     date = Column(DateTime)  # will be a composite of month,year,day for sorting/filtering
     day = Column(Integer)
     month = Column(Integer)
@@ -210,6 +211,7 @@ class Comic(Base):
         out = u"<Comic(id={0}, path={1},\n series={2}, issue={3}, year={4} pages={5}\n{6}".format(
             self.id, self.path,self.series,self.issue,self.year,self.page_count,self.characters)
         return out
+
     @property
     def credits(self):
         """Merge credits together into a dict with role name as key, and lists of persons"""
