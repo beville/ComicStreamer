@@ -263,6 +263,8 @@ class JSONResultAPIHandler(GenericAPIHandler):
                 order_key = Comic.volume
             elif order == "issue":
                 order_key = Comic.issue
+            elif order == "issue_num":
+                order_key = Comic.issue_num
             elif order == "date":
                 order_key = Comic.date
             elif order == "publisher":
@@ -1063,7 +1065,7 @@ class APIServer(tornado.web.Application):
         settings = dict(
             template_path=os.path.join(AppFolders.appBase(), "templates"),
             static_path=os.path.join(AppFolders.appBase(), "static"),
-            debug=False,
+            #debug=True,
             #autoreload=False,
             login_url="/login",
             cookie_secret=self.config['security']['cookie_secret'],
