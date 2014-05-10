@@ -432,3 +432,15 @@ ui-tooltip .ui-tooltip-content,
 .entry_form textarea:focus, input:focus {
 	border: 1px solid #09C;
 }
+
+
+.dynatable-processing span{
+	/*position:fixed;*/
+	background:#fff;
+	color:#000;
+	font-size: 30px;
+	font-style: italic;
+    padding:3px 7px 2px 7px;
+
+	border: 1px solid #000;
+}
