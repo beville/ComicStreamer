@@ -45,7 +45,7 @@
                     str = comic.year.toString();
                     if (comic.month !== "") {
                         month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                        str = month_names[comic.month] + " " + str;
+                        str = month_names[comic.month-1] + " " + str;
                     }
                     str = '(' + str + ')'
                     $(cd).find(".cd_date").text(str);
@@ -94,6 +94,27 @@
                 return cd;
             }        
 
+            function myAttributeWriter(record)
+            {
+                var val = record[this.id];
+                if (this.id == 'datex')
+                {
+                    if (record['month'] != "" && record['month'] != "")
+                    {
+                        val = record['month'] + '/' + record['year'];
+                    }
+                    else if (record['year'] != "")
+                    {
+                        val = record['year'];
+                    }
+                    else
+                    {
+                        val = "";
+                    } 
+                }
+
+                return val;
+            }
             function myRowWriter(rowIndex, record, columns, cellWriter)
             {
                 var tr = '';
@@ -205,7 +226,7 @@
                     writers:
                     {
                         _rowWriter: myRowWriter,
-                        //_attributeWriter: myAttributeWriter
+                        _attributeWriter: myAttributeWriter
                     },   
                 }
     
@@ -233,8 +254,8 @@
                     <tr>
                         <th data-dynatable-column="series">Series</th>
                         <th>Volume</th>
-                        <th>Issue</th>
-                        <th data-dynatable-sorts="date" data-dynatable-column="year">Year</th>
+                        <th data-dynatable-sorts="issue_num" data-dynatable-column="issue">Issue</th>
+                        <th data-dynatable-sorts="date" data-dynatable-column="datex">Date</th>
                         <th>Title</th>
                         <th>Publisher</th>
                         <th data-dynatable-column="path">Filename</th>
