@@ -108,5 +108,5 @@ class AppFolders():
     
     @staticmethod
     def imagePath(filename):
-        return os.path.join(AppFolders.appBase(), "images", filename)
+        return os.path.join(AppFolders.appBase(), "static", "images", filename)
     
