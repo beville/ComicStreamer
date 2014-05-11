@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+{% set title = "ComicStreamer: Search Results" %}
 {% autoescape xhtml_escape %}
 <html>
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <link rel="icon" href="/favicon.ico" />	      
-        <title>ComicStreamer - Search Results</title>
+        <title>{{title}}</title>
 
         <style type="text/css" title="currentStyle">
             @import "{{ static_url('dynatable/jquery.dynatable.css') }}";    
@@ -245,9 +246,10 @@
 
  
     </head>
-    <body>
-   
-        <div id="header"><h2>ComicStreamer - Search Results</h2></div>
+    <body>   
+        <div id="header">
+            {% include header.html %}
+        </div>  
         <div id="content">
             <table id="resultset" >
                 <thead>

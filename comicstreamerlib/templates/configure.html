@@ -1,11 +1,12 @@
 <!DOCTYPE html>
     {% autoescape None %}
+{% set title = "ComicStreamer: Config" %}
 <html>
     <head>
         <meta charset="utf8">
         <link rel="icon" href="/favicon.ico" />	      
         
-        <title>ComicStreamer - Config</title>
+        <title>{{title}}</title>
         
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
         
@@ -54,8 +55,9 @@
         </script>       
     </head>
     <body>
-        <div id="header"><h2>ComicStreamer - Config</h2></div>
-        
+        <div id="header">
+            {% include header.html %}
+        </div>          
         <div id=content>
             
             <form class="entry_form" action="configure" method="post">

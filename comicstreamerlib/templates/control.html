@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% set title = "ComicStreamer: Control" %}
 <html>
     <head>
         <meta charset="utf8">
@@ -104,8 +105,10 @@
        
     </head>
     <body>
-        <div id="header"><h2>ComicStreamer - Control</h2></div>
-              
+        <div id="header">
+            {% include header.html %}
+        </div>
+
         <div id=content>
             <div>
                 <button type="button" class="ctrl_button" onclick="sendCmd('restart')">Restart</button>                

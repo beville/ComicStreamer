@@ -62,7 +62,15 @@ ul.nav
 #header
 {
     background: #6495ED;
+    line-height: 40px;
+    height: 40px;
+    vertical-align: middle;
 }
+
+#header img {
+    vertical-align: middle;
+}
+
 
 #content
 {
