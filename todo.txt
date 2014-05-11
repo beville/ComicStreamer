@@ -1,11 +1,14 @@
 Priority:
 
+    search with OR in field
+    
 ----------------
 OS Integration:
     Mac OS :
     Windows:
         make taskbar active so it's shown?
         windows service?
+        remove tcl/tk from package
     Linux:
         init script to run as server
 ------------------
@@ -22,23 +25,16 @@ General Server:
 ------------------
 API:
     Versioning scheme!
-    proper sorting by issue number (numeric, not string)
     selective fields
-    search with OR / AND in field
-    filter by genre
     broswe folder heirarchy
 
 Entity API:
-
-    entity list:
-    genre
-	   year? (or decade?)
-	restore role
+    add url_path to entity items
 ---------------------------      
 Web UI:
 	if first run, dialog on config page to suggest security
 	if no folders set, dialog on main page to go to config
-	tags in popup
+	tags, genres in popup
 	scrolling in popup
 	details popup: add filesize, last read date
 	config: file log level
@@ -51,8 +47,6 @@ Windows:
 
 Mac:
 
-------------------------
-
 ---------------------
 Requirements:
    tornado
@@ -61,7 +55,6 @@ Requirements:
    python-dateutil
    pillow
    configobj >= 5.0.5
-http://stackoverflow.com/questions/20060096/installing-pil-with-pip
-
-	pybonjour
-		sudo apt-get install libavahi-compat-libdnssd1
+Optional:
+   pybonjour
+      sudo apt-get install libavahi-compat-libdnssd1
