@@ -144,6 +144,7 @@ class JSONResultAPIHandler(GenericAPIHandler):
         publisher = self.get_argument(u"publisher", default=None)
         credit_filter = self.get_argument(u"credit", default=None)
         tag = self.get_argument(u"tag", default=None)
+        genre = self.get_argument(u"genre", default=None)
         
         person = None
         role = None
@@ -193,6 +194,8 @@ class JSONResultAPIHandler(GenericAPIHandler):
             query = query.filter( Comic.locations.contains(unicode(location).replace("*","%") ))
         if hasValue(storyarc):
             query = query.filter( Comic.storyarcs.contains(unicode(storyarc).replace("*","%") ))
+        if hasValue(genre):
+            query = query.filter( Comic.genres.contains(unicode(genre).replace("*","%") ))
         if hasValue(volume):
             try:
                 vol = 0
@@ -561,6 +564,7 @@ class EntityAPIHandler(JSONResultAPIHandler):
                     'volumes' : Comic.volume,
                     'teams' : Team.name,
                     'storyarcs' : StoryArc.name,
+                    'genres' : Genre.name,
                     'locations' : Location.name,
                     'generictags' : GenericTag.name,            
                     'comics' : Comic
@@ -661,6 +665,8 @@ class EntityAPIHandler(JSONResultAPIHandler):
                 querybase = querybase.join(comics_teams_table).join(Comic)
             if entity == 'storyarcs':
                 querybase = querybase.join(comics_storyarcs_table).join(Comic)
+            if entity == 'genres':
+                querybase = querybase.join(comics_genres_table).join(Comic)
             if entity == 'locations':
                 querybase = querybase.join(comics_locations_table).join(Comic)
             if entity == 'generictags':
@@ -686,6 +692,8 @@ class EntityAPIHandler(JSONResultAPIHandler):
                 query = query.join(comics_teams_table).join(Team)
             if e == 'storyarcs':
                 query = query.join(comics_storyarcs_table).join(StoryArc)
+            if e == 'genres':
+                query = query.join(comics_genres_table).join(Genre)
             if e == 'locations':
                 query = query.join(comics_locations_table).join(Location)
             if e == 'generictags':
@@ -1065,7 +1073,7 @@ class APIServer(tornado.web.Application):
         settings = dict(
             template_path=os.path.join(AppFolders.appBase(), "templates"),
             static_path=os.path.join(AppFolders.appBase(), "static"),
-            #debug=True,
+            debug=True,
             #autoreload=False,
             login_url="/login",
             cookie_secret=self.config['security']['cookie_secret'],
