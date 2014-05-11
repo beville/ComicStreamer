@@ -556,7 +556,7 @@ class EntityAPIHandler(JSONResultAPIHandler):
                     'characters' : Character.name,
                     'persons' : Person.name,
                     'publishers' : Comic.publisher,
-                    #'roles' : Role.name,
+                    'roles' : Role.name,
                     'series': Comic.series,
                     'volumes' : Comic.volume,
                     'teams' : Team.name,
@@ -1057,7 +1057,7 @@ class APIServer(tornado.web.Application):
             (r"/entities/(.*)", EntityAPIHandler),
             (r"/command", CommandAPIHandler),
             (r"/scanstatus", ScanStatusAPIHandler),
-            (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': "favicon.ico"}),
+            (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': "images/favicon.ico"}),
             (r'/.*', UnknownHandler),
             
         ]
