@@ -2,7 +2,7 @@
 # rm, cp, grep, cut, cat
 
 HOMEPATH ?= $(HOME)
-STREAMER_BASE?= $(HOMEPATH)\Dropbox\streamer\cs
+STREAMER_BASE?= ..
 STREAMER_SRC := $(STREAMER_BASE)\comicstreamerlib
 DIST_DIR := $(STREAMER_BASE)\windows\dist
 NSIS_CMD :=	"C:\Program Files (x86)\NSIS\makensis.exe"
@@ -16,8 +16,7 @@ dist:
 	cp "$(STREAMER_BASE)\libs\comictaggerlib\UnRAR2\UnRARDLL\unrar.dll" $(DIST_DIR)
 	cp -r "$(STREAMER_SRC)\templates" $(DIST_DIR)
 	cp -r "$(STREAMER_SRC)\static" $(DIST_DIR)
-	cp -r "$(STREAMER_SRC)\images" $(DIST_DIR)
-	rm -rf "$(DIST_DIR)\static\HTML5-Comic-Book-Reader"
+	rem rm -rf "$(DIST_DIR)\static\HTML5-Comic-Book-Reader"
 	
 	
 package:
