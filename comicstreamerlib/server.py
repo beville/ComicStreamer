@@ -24,6 +24,9 @@ from datetime import date
 import tornado.escape
 import tornado.ioloop
 import tornado.web
+import urllib
+from urllib2 import quote
+
 
 from sqlalchemy import desc
 from sqlalchemy.orm import joinedload,subqueryload,aliased
@@ -102,7 +105,7 @@ class JSONResultAPIHandler(GenericAPIHandler):
         
         total_results = None
         if per_page is not None:
-            total_results = query.count()
+            total_results = query.distinct().count()
             try:
                 max = 0
                 max = int(per_page)
@@ -128,7 +131,8 @@ class JSONResultAPIHandler(GenericAPIHandler):
         
         keyphrase_filter = self.get_argument(u"keyphrase", default=None)
         series_filter = self.get_argument(u"series", default=None)
-        filename_filter = self.get_argument(u"path", default=None)
+        path_filter = self.get_argument(u"path", default=None)
+        folder_filter = self.get_argument(u"folder", default="")
         title_filter = self.get_argument(u"title", default=None)
         start_filter = self.get_argument(u"start_date", default=None)
         end_filter = self.get_argument(u"end_date", default=None)
@@ -145,6 +149,10 @@ class JSONResultAPIHandler(GenericAPIHandler):
         credit_filter = self.get_argument(u"credit", default=None)
         tag = self.get_argument(u"tag", default=None)
         genre = self.get_argument(u"genre", default=None)
+
+        if folder_filter != "":
+            folder_filter = os.path.normpath(folder_filter)
+            print folder_filter
         
         person = None
         role = None
@@ -169,33 +177,57 @@ class JSONResultAPIHandler(GenericAPIHandler):
                                 | Comic.publisher.ilike(keyphrase_filter)
                                 | Comic.path.ilike(keyphrase_filter)
                                 | Comic.comments.ilike(keyphrase_filter)
-                                #| Comic.characters.contains(keyphrase_filter)
-                                #| Comic.teams.contains(keyphrase_filter)
-                                #| Comic.locations.contains(keyphrase_filter)
-                                #| Comic.storyarcs.contains(keyphrase_filter)
-                                #| Comic.persons.contains(keyphrase_filter)
+                                #| Comic.characters_raw.any(Character.name.ilike(keyphrase_filter))
+                                #| Comic.teams_raw.any(Team.name.ilike(keyphrase_filter))
+                                #| Comic.locations_raw.any(Location.name.ilike(keyphrase_filter))
+                                #| Comic.storyarcs_raw.any(StoryArc.name.ilike(keyphrase_filter))
+                                | Comic.persons_raw.any(Person.name.ilike(keyphrase_filter))
                             )
 
-        if hasValue(series_filter):
-            query = query.filter( Comic.series.ilike(unicode(series_filter).replace("*","%") ))
-        if hasValue(title_filter):
-            query = query.filter( Comic.title.ilike(unicode(title_filter).replace("*","%") ))
-        if hasValue(filename_filter):
-            query = query.filter( Comic.path.ilike(unicode(filename_filter).replace("*","%") ))
-        if hasValue(publisher):
-            query = query.filter( Comic.publisher.ilike(unicode(publisher).replace("*","%") ))
-        if hasValue(character):
-            query = query.filter( Comic.characters.contains(unicode(character).replace("*","%") ))
-        if hasValue(tag):
-            query = query.filter( Comic.generictags.contains(unicode(tag).replace("*","%") ))
-        if hasValue(team):
-            query = query.filter( Comic.teams.contains(unicode(team).replace("*","%") ))
-        if hasValue(location):
-            query = query.filter( Comic.locations.contains(unicode(location).replace("*","%") ))
-        if hasValue(storyarc):
-            query = query.filter( Comic.storyarcs.contains(unicode(storyarc).replace("*","%") ))
-        if hasValue(genre):
-            query = query.filter( Comic.genres.contains(unicode(genre).replace("*","%") ))
+        def addQueryOnScalar(query, obj_prop, filt):
+            if hasValue(filt):
+                filt = unicode(filt).replace("*","%")
+                return query.filter( obj_prop.ilike(filt))
+            else:
+                return query
+        def addQueryOnList(query, obj_list, list_prop, filt):
+            if hasValue(filt):
+                filt = unicode(filt).replace("*","%")
+                return query.filter( obj_list.any(list_prop.ilike(filt)))
+            else:
+                return query
+
+        query = addQueryOnScalar(query, Comic.series, series_filter)
+        query = addQueryOnScalar(query, Comic.title, title_filter)
+        query = addQueryOnScalar(query, Comic.path, path_filter)
+        query = addQueryOnScalar(query, Comic.folder, folder_filter)
+        query = addQueryOnScalar(query, Comic.publisher, publisher)
+        query = addQueryOnList(query, Comic.characters_raw, Character.name, character)
+        query = addQueryOnList(query, Comic.generictags_raw, GenericTag.name, tag)
+        query = addQueryOnList(query, Comic.teams_raw, Team.name, team)
+        query = addQueryOnList(query, Comic.locations_raw, Location.name, location)
+        query = addQueryOnList(query, Comic.storyarcs_raw, StoryArc.name, storyarc)
+        query = addQueryOnList(query, Comic.genres_raw, Genre.name, genre)
+        #if hasValue(series_filter):
+        #    query = query.filter( Comic.series.ilike(unicode(series_filter).replace("*","%") ))
+        #if hasValue(title_filter):
+        #    query = query.filter( Comic.title.ilike(unicode(title_filter).replace("*","%") ))
+        #if hasValue(filename_filter):
+        #    query = query.filter( Comic.path.ilike(unicode(filename_filter).replace("*","%") ))
+        #if hasValue(publisher):
+        #    query = query.filter( Comic.publisher.ilike(unicode(publisher).replace("*","%") ))
+        #if hasValue(character):
+        #    query = query.filter( Comic.characters_raw.any(Character.name.ilike(unicode(character).replace("*","%") )))
+        #if hasValue(tag):
+        #    query = query.filter( Comic.generictags.contains(unicode(tag).replace("*","%") ))
+        #if hasValue(team):
+        #    query = query.filter( Comic.teams.contains(unicode(team).replace("*","%") ))
+        #if hasValue(location):
+        #    query = query.filter( Comic.locations.contains(unicode(location).replace("*","%") ))
+        #if hasValue(storyarc):
+        #    query = query.filter( Comic.storyarcs.contains(unicode(storyarc).replace("*","%") ))
+        #if hasValue(genre):
+        #    query = query.filter( Comic.genres.contains(unicode(genre).replace("*","%") ))
         if hasValue(volume):
             try:
                 vol = 0
@@ -265,8 +297,6 @@ class JSONResultAPIHandler(GenericAPIHandler):
             elif order == "volume":
                 order_key = Comic.volume
             elif order == "issue":
-                order_key = Comic.issue
-            elif order == "issue_num":
                 order_key = Comic.issue_num
             elif order == "date":
                 order_key = Comic.date
@@ -461,6 +491,16 @@ class ComicListBrowserHandler(BaseHandler):
                     api_key=self.application.config['security']['api_key']
                 )
 
+class FoldersBrowserHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self,args):
+        if args is None:
+            args = "/"
+            
+        self.render("folders.html",
+                    args=args,
+                    api_key = self.application.config['security']['api_key'])
+
 class EntitiesBrowserHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self,args):
@@ -531,7 +571,7 @@ class FileAPIHandler(GenericAPIHandler):
         session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         if obj is not None:
-            ca = ComicArchive(obj.path, AppFolders.imagePath("default.jpg"))
+            ca = ComicArchive(obj.path, default_image_path=AppFolders.imagePath("default.jpg"))
             if ca.isZip():
                 self.add_header("Content-type","application/zip, application/octet-stream")
             else:
@@ -539,11 +579,79 @@ class FileAPIHandler(GenericAPIHandler):
                 
             self.add_header("Content-Disposition", "attachment; filename=" + os.path.basename(obj.path))    
 
-            f = open(ca.path, 'r')
-            file_data = f.read()
-            f.close()
+            with open(obj.path, 'rb') as fd:
+                file_data = fd.read()
     
             self.write(file_data)
+
+class FolderAPIHandler(JSONResultAPIHandler):
+    def get(self, args):            
+        self.validateAPIKey()
+        session = self.application.dm.Session()
+        if args is not None:
+            args = urllib.unquote(args)
+            arglist = args.split('/')
+            arglist = filter(None, arglist)
+            argcount = len(arglist)
+        else:
+            arglist = list()
+            argcount = 0
+            
+        print arglist
+        folder_list = self.application.config['general']['folder_list']
+
+        response = {
+            'current' : "",
+            'folders' : [],
+            'comics' : {
+                'url_path' : "",
+                'count' : 0
+            }   
+        }       
+        if argcount == 0:
+            # just send the list of root level folders
+            for idx, val in enumerate(folder_list):
+                item = {
+                    'name': val,
+                    'url_path' : "/folders/" + str(idx)
+                }   
+                response['folders'].append(item)
+            
+        else:
+            try:
+                # need to validate the first arg is an index into the list
+                folder_idx = int(arglist[0])
+                if folder_idx >= len(folder_list):
+                    raise Exception
+
+                # build up a folder by combining the root folder with the following path
+                path = os.path.join(folder_list[folder_idx], *arglist[1:] )
+                # validate *that* folder
+                if not os.path.exists(path):
+                    print "Not exist", path, type(path)            
+                    raise Exception
+                
+
+                response['current'] = path
+                # create a list of subfolders    
+                for o in os.listdir(path):
+                    if os.path.isdir(os.path.join(path,o)):
+                        sub_path = u"/folders" + args + u"/" + o   
+                        item = {
+                            'name': o,
+                            'url_path' : sub_path
+                            }   
+                        response['folders'].append(item)
+                # see if there are any comics here
+                response['comics']['count'] = session.query(Comic).filter(Comic.folder == path).count()
+                response['comics']['url_path'] = u"/comiclist?folder={0}".format(path)
+
+            except FloatingPointError as e:
+                print e
+                raise tornado.web.HTTPError(404, "Unknown folder")
+ 
+        self.setContentType()
+        self.write(response)
             
 class EntityAPIHandler(JSONResultAPIHandler):
     def get(self, args):            
@@ -1049,6 +1157,7 @@ class APIServer(tornado.web.Application):
             (r"/configure", ConfigPageHandler),
             (r"/log", LogPageHandler),
             (r"/comiclist/browse", ComicListBrowserHandler),
+            (r"/folders/browse(/.*)*", FoldersBrowserHandler),
             (r"/entities/browse/(.*)", EntitiesBrowserHandler),
             (r"/comic/([0-9]+)/reader", ReaderHandler),
             (r"/login", LoginHandler),
@@ -1063,9 +1172,10 @@ class APIServer(tornado.web.Application):
             (r"/comic/([0-9]+)/thumbnail", ThumbnailAPIHandler),
             (r"/comic/([0-9]+)/file", FileAPIHandler),
             (r"/entities/(.*)", EntityAPIHandler),
+            (r"/folders(/.*)*", FolderAPIHandler),
             (r"/command", CommandAPIHandler),
             (r"/scanstatus", ScanStatusAPIHandler),
-            (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': "images/favicon.ico"}),
+            (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join("static","images","favicon.ico")}),
             (r'/.*', UnknownHandler),
             
         ]

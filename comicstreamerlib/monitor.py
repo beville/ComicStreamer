@@ -224,7 +224,11 @@ class Monitor():
         self.add_count += 1
         
         comic = Comic()
-        comic.path = md.path 
+        # store full path, and filename and folder separately, for search efficiency,
+        # at the cost of redundant storage
+        comic.folder, comic.file = os.path.split(md.path)
+        comic.path = md.path
+
         comic.page_count = md.page_count
         comic.mod_ts = md.mod_ts
         comic.hash = md.hash

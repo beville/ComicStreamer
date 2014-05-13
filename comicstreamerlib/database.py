@@ -71,6 +71,9 @@ def alchemy_encoder():
                                                     and not x.endswith('_raw')
                                                     and x != "persons" 
                                                     and x != "roles" 
+                                                    and x != "issue_num" 
+                                                    and x != "file" 
+                                                    and x != "folder" 
                                                     ]:
                     value = obj.__getattribute__(field)
                     if (isinstance(value, date)): 
@@ -144,6 +147,8 @@ class Comic(Base):
 
     id = Column(Integer, primary_key=True)
     path = Column(String, unique=True)
+    folder = Column(String)
+    file = Column(String)
     series = Column(String)
     issue = Column(String)
     issue_num = Column(Float)
@@ -209,7 +214,7 @@ class Comic(Base):
      
     def __repr__(self):
         out = u"<Comic(id={0}, path={1},\n series={2}, issue={3}, year={4} pages={5}\n{6}".format(
-            self.id, self.path,self.series,self.issue,self.year,self.page_count,self.characters)
+            self.id, self.folder+self.file,self.series,self.issue,self.year,self.page_count,self.characters)
         return out
 
     @property
@@ -279,7 +284,7 @@ class Character(Base):
     #name = Column(String, unique=True)
     name = ColumnProperty(
                     Column('name', String, unique = True),
-                    comparator_factory=MyComparator
+                    #comparator_factory=MyComparator
                 )   
     
     def __repr__(self):
