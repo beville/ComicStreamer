@@ -12,7 +12,7 @@ ComicStreamer is very early ALPHA stages, and may be very flakey, eating up memo
 
 Binary downloads for Windows and Mac OS builds available [here](https://googledrive.com/host/0Bw4IursaqWhhbDFzUENfSTAwckE/).
 
-If you have web development or graphic design skills, and would like to help out, please contact me comictagger@gmail.com.  In particular, ComicStreamer needs a logo!
+If you have web development or graphic design skills, and would like to help out, please contact me at comictagger@gmail.com.  In particular, ComicStreamer needs a logo!
 
 ----------
 
@@ -28,6 +28,9 @@ If you have web development or graphic design skills, and would like to help out
 * python-dateutil
 * pillow (PIL fork)
 * configobj >= 5.0.5
+
+Optional:
+* pybonjour (for automatic server discovery)
 
 
 ------
@@ -49,7 +52,7 @@ From the source, just run "comicstreamer" in the base folder (on windows you may
 
 For the binary builds, run from the installed app icon.  There should be no taskbar/dock presence, but an icon should appear in the system tray (windows), or status menu (mac).
 
-A web browser should automatically open to "http://localhost:32500".  On your first run, use the "config" page to set the comic folders, and the "control" page to restart the server.  It will start scanning, and all comics in the given folder and sub folders will be added to database.
+A web browser should automatically open to "http://localhost:32500".  On your first run, use the "config" page to set the comic folders, and the "control" page to restart the server.  It will start scanning, and all comics in the given folders and sub folders will be added to database.
 
 Some tips:
 
