@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{% set title = "ComicStreamer: Folders" %}
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <link rel="icon" href="/favicon.ico" />	      
+        <title>{{title}}</title>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+        
+        <style type="text/css">
+            @import "{{ static_url('comicstreamer.css') }}";    
+        </style>      
+        <script type="text/javascript" language="javascript">
+            var nokey_args = '{{args}}';
+            args = nokey_args  + '?&api_key={{api_key}}'
+            var url = '/folders' + args;
+            var items = [];
+            
+            function list_pusher( key, val )
+            {
+                browse_path = val.url_path.replace(/^\/folders/, "/folders/browse");
+                items.push( "<li><a href=\"" + browse_path + "\">" + val.name+"</a></li>" );
+            }
+            
+            function processEntityList(data)
+            {
+                if (data.current != "")
+                {
+                    parent = nokey_args.split("/").slice(0,-1).join("/");
+                    items.push( "<li><a href=\"/folders/browse" + parent + "\">[up]</a></li>" );
+                    str = data.current;
+                    $("#current").html(str);
+                }
+                else
+                {
+                    $("#current").html("[ROOT]");
+                }
+
+                $.each( data.folders, list_pusher);
+
+                folder_div = document.getElementById("folders");
+                $( "<ul/>", {
+                  "class": "my-new-list",
+                  html: items.join( "" )
+                }).appendTo( folder_div );
+
+                if ( data.current != "")
+                {        
+                    if (data.comics.count == 0)
+                    {
+                        $("#comics").text("[No comics in this folder]");
+                    }
+                    else
+                    {
+                        browse_path = data.comics.url_path.replace(/^\/comiclist/, "/comiclist/browse");
+                        str = "<a href=\"" + browse_path + "\">Comics (" + data.comics.count.toString() +")</a>"
+                        $("#comics").html(str);
+                    }       
+                }
+            }
+            $.getJSON( encodeURI(url), processEntityList);			
+        </script>
+
+ 
+   </head>
+    <body>
+        <div id="header">
+            {% include header.html %}
+        </div>
+              
+        <div id=content>
+            <div id="current" class="browser_current">
+                <br>
+            </div>
+            <div id="folders" class="browser_list">
+                <br>
+            </div>
+            <div id="comics">
+                <br>
+            </div>
+
+        </div>
+   
+        <div id=navigation>
+            {% include menu.html %}
+        </div>   
+     </body>
+</html>
+
