@@ -20,7 +20,6 @@ dist:
 
 	cp -a $(STREAMER_SRC)/templates $(APP_BUNDLE)/Contents/MacOS
 	cp -a $(STREAMER_SRC)/static $(APP_BUNDLE)/Contents/MacOS
-	cp -a $(STREAMER_SRC)/images $(APP_BUNDLE)/Contents/MacOS
 	cp $(MAC_BASE)/app.icns $(APP_BUNDLE)/Contents/Resources/icon-windowed.icns
 	cp `which unrar` $(APP_BUNDLE)/Contents/MacOS
 	
