@@ -26,6 +26,7 @@ from sqlalchemy.orm.properties import \
                         RelationshipProperty
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
+SCHEMA_VERSION=1
 
 Base = declarative_base()
 Session = sessionmaker()
@@ -340,6 +341,7 @@ class DatabaseInfo(Base):
     __tablename__ = "dbid"
     id = Column(Integer, primary_key=True)
     uuid = Column(String)
+    schema_version = Column(Integer)
     created = Column(DateTime, default=datetime.utcnow)
     last_updated = Column(DateTime)
     
@@ -371,10 +373,14 @@ class DataManager():
         if results is None:
            dbinfo = DatabaseInfo()
            dbinfo.uuid = unicode(uuid.uuid4().hex)
+           dbinfo.schema_version = SCHEMA_VERSION
            dbinfo.last_updated = datetime.utcnow()
            session.add(dbinfo)
            session.commit()
            logging.debug("Added new uuid".format(dbinfo.uuid))
+        else:
+            if results.schema_version != SCHEMA_VERSION:
+                raise Exception
 
 if __name__ == "__main__":
     dm = DataManager()
