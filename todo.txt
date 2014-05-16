@@ -1,7 +1,6 @@
 Priority:
 
-    search with OR in field
-    
+
 ----------------
 OS Integration:
     Mac OS :
@@ -14,6 +13,7 @@ OS Integration:
 ------------------
 Database:
     Versioning scheme?? (migrate or rebuild with each change?)
+		rebuilding should try to preserve user data such as bookmarks, favorites, reading lists, users(?)
     bug: per_page setting slice off child lists...?? (mitigated by ordering
     bug: possible cascade confusion on lots of deletes/adds
     bug: wrong counts on person query (with multiple roles for person) with per_page set
@@ -22,11 +22,15 @@ General Server:
     more efficient queries (less joins, less selects)
     look into https
         need to provide default key and cert files, but offer option for user-supplied
+    multiple users??
+	  bookmarks, favorites, readinglists
 ------------------
 API:
-    Versioning scheme!
+    Versioning!
     selective fields
-    broswe folder heirarchy
+    search with OR in field
+    favorite
+    reading list
 
 Entity API:
     add url_path to entity items
@@ -41,20 +45,12 @@ Web UI:
 	consolidate all jquery files, make sure all loads are local
 	  
 Monitor:
+    make removal process more efficient with lots of books
+    config setting to not auto-remove when book is missing (possible temporarily missing USB driver, for example)
 	watchdog doesn't trigger on file moving out of watched area
+	maybe do intermitent commits when scanning files
    
 Windows:
 
 Mac:
 
----------------------
-Requirements:
-   tornado
-   sqlalchemy >= 0.9
-   watchdog
-   python-dateutil
-   pillow
-   configobj >= 5.0.5
-Optional:
-   pybonjour
-      sudo apt-get install libavahi-compat-libdnssd1
