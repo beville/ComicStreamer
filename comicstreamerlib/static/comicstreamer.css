@@ -468,6 +468,8 @@ ui-tooltip .ui-tooltip-content,
 .browser_list ul li { }
 .browser_list ul li a { display:block; text-decoration:none; color:#000000; background-color:#FFFFFF; line-height:25px;
    padding-left:5px; cursor:pointer; }
+.browser_list ul li a:hover { color:#3399FF; Ê }
+   
 /*
 .browser_list ul li a:hover { color:#FFFFFF; background-image:url(../images/hover.png); background-repeat:repeat-x; }
 */
