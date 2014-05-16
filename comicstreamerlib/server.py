@@ -151,7 +151,7 @@ class JSONResultAPIHandler(GenericAPIHandler):
         genre = self.get_argument(u"genre", default=None)
 
         if folder_filter != "":
-            folder_filter = os.path.normpath(folder_filter)
+            folder_filter = os.path.normcase(os.path.normpath(folder_filter))
             print folder_filter
         
         person = None
@@ -496,6 +496,7 @@ class FoldersBrowserHandler(BaseHandler):
     def get(self,args):
         if args is None:
             args = "/"
+        args = utils.collapseRepeats(args, "/")    
             
         self.render("folders.html",
                     args=args,
@@ -504,6 +505,8 @@ class FoldersBrowserHandler(BaseHandler):
 class EntitiesBrowserHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self,args):
+        if args is None:
+            args = ""
         arg_string = args
         #if '/' in args:
         #   arg_string = args.split('/',1)[1]
@@ -597,7 +600,6 @@ class FolderAPIHandler(JSONResultAPIHandler):
             arglist = list()
             argcount = 0
             
-        print arglist
         folder_list = self.application.config['general']['folder_list']
 
         response = {
@@ -658,6 +660,8 @@ class EntityAPIHandler(JSONResultAPIHandler):
         self.validateAPIKey()
         session = self.application.dm.Session()
         
+        if args is None:
+            args = ""
         arglist=args.split('/')
             
         arglist = filter(None, arglist)
@@ -987,13 +991,28 @@ class ConfigPageHandler(BaseHandler):
         failure_strs = list()
         validated = False
         
-        #validate folders exist
         old_folder_list = self.application.config['general']['folder_list']
-        new_folder_list = [os.path.abspath(os.path.normpath(unicode(a))) for a in formdata['folders'].splitlines()]
-        for f in new_folder_list:
-            if not (os.path.exists(f) and  os.path.isdir(f)):
-                failure_strs.append(u"Folder {0} doesn't exist.".format(f))
-                break
+        new_folder_list = [os.path.normcase(os.path.abspath(os.path.normpath(unicode(a)))) for a in formdata['folders'].splitlines()]
+
+        try:
+            for i, f in enumerate(new_folder_list):
+                #validate folders exist
+                if not (os.path.exists(f) and  os.path.isdir(f)):
+                    failure_strs.append(u"Folder {0} doesn't exist.".format(f))
+                    break
+                # check for repeat or contained 
+                for j, f1 in enumerate(new_folder_list):
+                    if i != j:
+                        if  f1 == f:
+                            failure_strs.append(u"Can't have repeat folders.")
+                            raise Exception
+                        if  f1.startswith(f):
+                            failure_strs.append(u"One folder can't contain another.")
+                            raise Exception
+        except Exception:
+            pass
+    
+            
 
         port_failed = False
         old_port = self.application.config['general']['port']
@@ -1127,7 +1146,14 @@ class APIServer(tornado.web.Application):
         if opts.reset:
             sys.exit(0)
             
-        self.dm.create()
+        try:
+            self.dm.create()
+        except Exception as e:
+            msg = "Couldn't open database.  Probably the schema has changed."
+            logging.error(msg)
+            utils.alert("Schema change", msg)
+            sys.exit(-1)
+            
         
         try:
             self.listen(self.port, no_keep_alive = True)
@@ -1158,7 +1184,7 @@ class APIServer(tornado.web.Application):
             (r"/log", LogPageHandler),
             (r"/comiclist/browse", ComicListBrowserHandler),
             (r"/folders/browse(/.*)*", FoldersBrowserHandler),
-            (r"/entities/browse/(.*)", EntitiesBrowserHandler),
+            (r"/entities/browse(/.*)*", EntitiesBrowserHandler),
             (r"/comic/([0-9]+)/reader", ReaderHandler),
             (r"/login", LoginHandler),
             # Data
@@ -1171,11 +1197,11 @@ class APIServer(tornado.web.Application):
             (r"/comic/([0-9]+)/page/([0-9]+)", ComicPageAPIHandler ),
             (r"/comic/([0-9]+)/thumbnail", ThumbnailAPIHandler),
             (r"/comic/([0-9]+)/file", FileAPIHandler),
-            (r"/entities/(.*)", EntityAPIHandler),
+            (r"/entities(/.*)*", EntityAPIHandler),
             (r"/folders(/.*)*", FolderAPIHandler),
             (r"/command", CommandAPIHandler),
             (r"/scanstatus", ScanStatusAPIHandler),
-            (r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join("static","images","favicon.ico")}),
+            #(r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(AppFolders.appBase(), "static","images")}),
             (r'/.*', UnknownHandler),
             
         ]

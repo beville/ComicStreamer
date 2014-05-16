@@ -452,3 +452,23 @@ ui-tooltip .ui-tooltip-content,
 
 	border: 1px solid #000;
 }
+
+
+.browser_current {
+    font-size:1.2em;
+    font-weight: bold;
+}
+
+/*
+.browser_list ul {  font-size:1em; }
+.browser_list  li { line-height:20px; }
+*/
+.browser_list { width:320px;  font-size:15px; }
+.browser_list ul { list-style: none; }
+.browser_list ul li { }
+.browser_list ul li a { display:block; text-decoration:none; color:#000000; background-color:#FFFFFF; line-height:25px;
+   padding-left:5px; cursor:pointer; }
+/*
+.browser_list ul li a:hover { color:#FFFFFF; background-image:url(../images/hover.png); background-repeat:repeat-x; }
+*/
+.browser_list ul li a strong { margin-right:10px; }

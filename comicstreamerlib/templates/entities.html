@@ -43,6 +43,37 @@
 
                 entity_list = data[entity_name];
 
+                // build the bread crumbs header
+                path_items = nokey_args.split("/").filter(Boolean);
+                path_str = ""
+                if (path_items.length != 0)
+                {
+                    parent = nokey_args.split("/").slice(0,-1).join("/");
+                    items.push( "<li><a href=\"/entities/browse" + parent + "\">[back]</a></li>" );
+                    str = data.current;
+
+                    for (i = 0; i < path_items.length; i+=2)
+                    {
+                        item_str = ' /';
+                        key = path_items[i];
+                        if (i + 1 < path_items.length)
+                        {
+                            item_str += key + '=' + path_items[i+1];
+                        }
+                        else
+                        {
+                            item_str += key;
+                        }
+                        path_str += item_str;
+                    }
+                }
+                else
+                {
+                    path_str = ' /';
+                }       
+                $("#current").html(path_str);
+
+                // now do the list
                 if (entity_name == "entities")
                 {
                     $.each( entity_list, entity_list_pusher);
@@ -52,18 +83,12 @@
                     $.each( entity_list, value_list_pusher);                    
                 }
 
-                content = document.getElementById("content");
+                items_div = document.getElementById("items");
                 $( "<ul/>", {
                   "class": "my-new-list",
                   html: items.join( "" )
-                }).appendTo( content );
+                }).appendTo( items_div );
             }
-            
-            //function processComicResults(data)
-            //{
-            //	window.location	
-            //}
-            
             
             //console.log(lastWord);
             if (lastWord == 'comics')
@@ -86,12 +111,10 @@
         </div>
               
         <div id=content>
-            <div id="tbd">
-                TBD:
-                <li>better formatting</li>
-                <li>add bread crumbs</li>
+            <div id="current" class="browser_current">
             </div>
-            <br>
+            <div id="items" class="browser_list">
+            </div>
         </div>
    
         <div id=navigation>
