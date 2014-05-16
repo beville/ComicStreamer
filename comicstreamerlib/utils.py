@@ -112,5 +112,8 @@ def alert(title, msg):
             import win32gui
             win32gui.MessageBox(0,msg,title,0)
 
+def collapseRepeats(string, ch):
+	return re.sub("/"+ ch + "*", ch, string) 
+
 
 
