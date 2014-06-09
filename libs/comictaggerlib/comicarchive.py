@@ -26,6 +26,7 @@ import tempfile
 import subprocess
 import platform
 import locale
+from natsort import natsorted
 
 if platform.system() == "Windows":
 	import _subprocess
@@ -756,12 +757,12 @@ class ComicArchive:
 			if sort_list:
 				def keyfunc(k):
 					#hack to account for some weird scanner ID pages
-					basename=os.path.split(k)[1]
-					if basename < '0':
-						k = os.path.join(os.path.split(k)[0], "z" + basename)
+					#basename=os.path.split(k)[1]
+					#if basename < '0':
+					#	k = os.path.join(os.path.split(k)[0], "z" + basename)
 					return k.lower()
 				
-				files.sort(key=keyfunc)
+				files = natsorted(files, key=keyfunc,signed=False)
 			
 			# make a sub-list of image files
 			self.page_list = []
