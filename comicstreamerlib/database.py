@@ -8,6 +8,7 @@ import uuid
 import logging
 import os
 
+import utils
 from config import ComicStreamerConfig
 from comicstreamerlib.folders import AppFolders
 
@@ -26,7 +27,7 @@ from sqlalchemy.orm.properties import \
                         RelationshipProperty
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-SCHEMA_VERSION=1
+SCHEMA_VERSION=2
 
 Base = declarative_base()
 Session = sessionmaker()
@@ -130,6 +131,14 @@ comics_genres_table = Table('comics_genres', Base.metadata,
      Column('genre_id', Integer, ForeignKey('genres.id'))
 )
 
+"""
+# Junction table
+readinglists_comics_table = Table('readinglists_comics', Base.metadata,
+     Column('comic_id', Integer, ForeignKey('comics.id')),
+     Column('readinglist_id', Integer, ForeignKey('readinglists.id'))
+)
+"""
+
 class CreditComparator(RelationshipProperty.Comparator):
     def __eq__(self, other):
         return self.person() == other
@@ -213,6 +222,8 @@ class Comic(Base):
     roles = association_proxy('roles_raw', 'name')
     genres = association_proxy('genres_raw', 'name')
      
+    #bookmark = relationship("Bookmark",  backref="comic", lazy="dynamic")  #uselist=False,    
+     
     def __repr__(self):
         out = u"<Comic(id={0}, path={1},\n series={2}, issue={3}, year={4} pages={5}\n{6}".format(
             self.id, self.folder+self.file,self.series,self.issue,self.year,self.page_count,self.characters)
@@ -262,7 +273,6 @@ class Credit(Base):
         
     #def __repr__(self):
     #   return u"<Credit(person={0},role={1})>".format(self.person_role_tuple[1], self.person_role_tuple[0])
-        
         
 class Role(Base):
     __tablename__ = "roles"
@@ -336,12 +346,48 @@ class DeletedComic(Base):
     def __unicode__(self):
         out = u"DeletedComic: {0}:{1}".format(self.id, self.comic_id)
         return out
+"""
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    password_digest = Column(String)
+
+class Bookmark(Base):
+    __tablename__ = "bookmarks"
+    __table_args__ = {'sqlite_autoincrement': True}
+    
+    #id = Column(Integer, primary_key=True)
+    comic_id = Column(Integer, ForeignKey('comics.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    page = Column(Integer)
+    updated = Column(DateTime)
+
+class Favorite(Base):
+    __tablename__ = "favorites"
+    id = Column(Integer, primary_key=True)
+    comic_id = Column(Integer, ForeignKey('comics.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+
+class ReadingList(Base):
+    __tablename__ = "readinglists"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    name = Column(String)
+    comics = relationship('Comic', secondary=readinglists_comics_table,
+                                #cascade="delete", #, backref='comics')
+                         )
+"""
+
+class SchemaInfo(Base):
+    __tablename__ = "schemainfo"
+    id = Column(Integer, primary_key=True)
+    schema_version = Column(Integer)
 
 class DatabaseInfo(Base):
     __tablename__ = "dbid"
     id = Column(Integer, primary_key=True)
     uuid = Column(String)
-    schema_version = Column(Integer)
     created = Column(DateTime, default=datetime.utcnow)
     last_updated = Column(DateTime)
     
@@ -349,6 +395,9 @@ class DatabaseInfo(Base):
         out = u"{0}".format(self.uuid)
         return out
                     
+class SchemaVersionException(Exception):
+    pass
+
 class DataManager():
     def __init__(self):
         self.dbfile = os.path.join(AppFolders.appData(), "comicdb.sqlite")
@@ -368,19 +417,38 @@ class DataManager():
         Base.metadata.create_all(self.engine) 
 
         session = self.Session()
+ 
+        results = session.query(SchemaInfo).first()
+        if results is None:
+           schemainfo = SchemaInfo()
+           schemainfo.schema_version = SCHEMA_VERSION
+           session.add(schemainfo)
+           logging.debug("Setting scheme version".format(schemainfo.schema_version))
+           session.commit()
+        else:
+            if results.schema_version != SCHEMA_VERSION:
+                raise SchemaVersionException
         
         results = session.query(DatabaseInfo).first()
         if results is None:
            dbinfo = DatabaseInfo()
            dbinfo.uuid = unicode(uuid.uuid4().hex)
-           dbinfo.schema_version = SCHEMA_VERSION
            dbinfo.last_updated = datetime.utcnow()
            session.add(dbinfo)
            session.commit()
            logging.debug("Added new uuid".format(dbinfo.uuid))
-        else:
-            if results.schema_version != SCHEMA_VERSION:
-                raise Exception
+
+        """
+        # Eventually, there will be multi-user support, but for now,
+        # just have a single user entry
+        results = session.query(User).first()
+        if results is None:
+           user = User()
+           user.name = ""
+           user.password_digest = utils.getDigest("")
+           session.add(user)
+           session.commit()
+        """
 
 if __name__ == "__main__":
     dm = DataManager()
