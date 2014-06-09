@@ -359,7 +359,7 @@ class ImageAPIHandler(GenericAPIHandler):
 
         if obj is not None:
             if int(pagenum) < obj.page_count:
-                ca = ComicArchive(obj.path, default_image_path=default_img_file)
+                ca = self.application.getComicArchive(obj.path)
                 image_data = ca.getPage(int(pagenum))
     
         if image_data is None:
@@ -574,7 +574,7 @@ class FileAPIHandler(GenericAPIHandler):
         session = self.application.dm.Session()
         obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
         if obj is not None:
-            ca = ComicArchive(obj.path, default_image_path=AppFolders.imagePath("default.jpg"))
+            ca = self.application.getComicArchive(obj.path)
             if ca.isZip():
                 self.add_header("Content-type","application/zip, application/octet-stream")
             else:
@@ -1130,7 +1130,7 @@ class APIServer(tornado.web.Application):
         self.opts = opts
         
         self.port = self.config['general']['port']
-        
+        self.comicArchiveList = []
         
         #if len(self.config['general']['folder_list']) == 0:
         #    logging.error("No folders on either command-line or config file.  Quitting.")
@@ -1148,7 +1148,7 @@ class APIServer(tornado.web.Application):
             
         try:
             self.dm.create()
-        except Exception as e:
+        except SchemaVersionException as e:
             msg = "Couldn't open database.  Probably the schema has changed."
             logging.error(msg)
             utils.alert("Schema change", msg)
@@ -1303,4 +1303,19 @@ class APIServer(tornado.web.Application):
         import threading
         t = threading.Thread(target=self.run)
         t.start()
-
+        
+    def getComicArchive(self, path):
+        # should also look at modified time of file
+        for ca in self.comicArchiveList:
+            if ca.path == path:
+                # remove from list and put at end
+                self.comicArchiveList.remove(ca)
+                self.comicArchiveList.append(ca)
+                return ca
+        else:
+            ca = ComicArchive(path, default_image_path=AppFolders.imagePath("default.jpg"))
+            self.comicArchiveList.append(ca)
+            if len(self.comicArchiveList) > 10:
+                self.comicArchiveList.pop(0)
+                print "removing old item"
+            return ca
