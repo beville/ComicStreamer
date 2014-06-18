@@ -3,14 +3,17 @@
 <html>
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <link rel="icon" href="/favicon.ico" />	      
+        <link rel="icon" href="/favicon.ico" />
+
+		{% include head_links.html %}
+
         <title>{{title}}</title>
-        
+
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-        
+
         <style type="text/css">
-            @import "{{ static_url('comicstreamer.css') }}";    
-        </style>      
+            @import "{{ static_url('comicstreamer.css') }}";
+        </style>
         <script type="text/javascript" language="javascript">
             var nokey_args = '{{args}}';
 
@@ -18,10 +21,10 @@
             var url = '/entities/' + args;
             var nokey_url = '/entities/' + nokey_args;
             var items = [];
-            
+
             var wordList = nokey_args.split('/');
             var lastWord = wordList[wordList.length - 1];
-            
+
             function entity_list_pusher( key, val )
             {
                 //items.push( "<li id='" + key + "'>" + val + "</li>" );
@@ -36,7 +39,7 @@
                 //items.push( "<li id='" + key + "'>" + val + "</li>" );
                 items.push( "<li><a href=\"" + document.URL +"/" + val + "\">" + val+"</a></li>" );
             }
-            
+
             function processEntityList(data)
             {
                 entity_name = Object.keys(data)[0]
@@ -70,7 +73,7 @@
                 else
                 {
                     path_str = ' /';
-                }       
+                }
                 $("#current").html(path_str);
 
                 // now do the list
@@ -80,7 +83,7 @@
                 }
                 else
                 {
-                    $.each( entity_list, value_list_pusher);                    
+                    $.each( entity_list, value_list_pusher);
                 }
 
                 items_div = document.getElementById("items");
@@ -89,7 +92,7 @@
                   html: items.join( "" )
                 }).appendTo( items_div );
             }
-            
+
             //console.log(lastWord);
             if (lastWord == 'comics')
             {
@@ -99,27 +102,27 @@
             }
             else
             {
-                $.getJSON( url, processEntityList);			
+                $.getJSON( url, processEntityList);
             }
         </script>
 
- 
+
    </head>
     <body>
         <div id="header">
             {% include header.html %}
         </div>
-              
+
         <div id=content>
             <div id="current" class="browser_current">
             </div>
             <div id="items" class="browser_list">
             </div>
         </div>
-   
+
         <div id=navigation>
             {% include menu.html %}
-        </div>   
+        </div>
      </body>
 </html>
 

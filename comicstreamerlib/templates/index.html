@@ -3,21 +3,23 @@
 <html>
     <head>
         <meta charset="utf8">
-        <link rel="icon" href="/favicon.ico" />	      
-        
+        <link rel="icon" href="/favicon.ico" />
+
+		{% include head_links.html %}
+
         <title>{{title}}</title>
-        
+
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-        
+
         <style type="text/css">
-          @import "{{ static_url('comicstreamer.css') }}";    
+          @import "{{ static_url('comicstreamer.css') }}";
         </style>
         <script type="text/javascript" language="javascript">
             function searchSubmit()
             {
                 var role = $('#roles_select').val();
                 var person = $('#person_input').val();
-            
+
                 if (person != "")
                 {
                     if (role != "")
@@ -27,7 +29,7 @@
                 }
                 $('#credit_input').val(person);
             }
-            
+
             function processs_status(scanstatus)
             {
                 // if new scan complete time is newer than this page, reload the page
@@ -35,7 +37,7 @@
                 {
                     location.reload();
                 }
-                
+
                 // update some elements here
                 $('#scan_status').text("Scan status: " + scanstatus.status)
                 $('#scan_status_detail').text(scanstatus.detail)
@@ -58,25 +60,25 @@
 
                 function()
                 {
-                    setTimeout(fetch_status, 1000);           
+                    setTimeout(fetch_status, 1000);
                 }
             );
         </script>
-           
+
     </head>
     <body>
         <div id="header">
             {% include header.html %}
-        </div>                
+        </div>
         <div id=content>
             <br>
             <div id="main_topbar">
                 <div id="main_stats">
                     <h3>Comic Library Info</h3>
                     <ul>
-                        <li>Library last updated: {{ stats['last_updated'] }}</li>           
-                        <li>Library created: {{ stats['created'] }}</li>           
-                        <li>{{ stats['total'] }} comics, including {{ stats['series'] }} series and {{ stats['persons'] }} creators/contributors</li>           
+                        <li>Library last updated: {{ stats['last_updated'] }}</li>
+                        <li>Library created: {{ stats['created'] }}</li>
+                        <li>{{ stats['total'] }} comics, including {{ stats['series'] }} series and {{ stats['persons'] }} creators/contributors</li>
                     </ul>
                     <a href="/comiclist/browse">
                     <h3>
@@ -87,7 +89,7 @@
                     <div id="scan_status">
                     </div>
                     <div id="scan_status_detail">
-                    </div>    
+                    </div>
                 </div>
                 <div id="main_random">
                     <span><h3>Random Pull</h3></span>
@@ -95,10 +97,10 @@
                                    <img src="/comic/{{random_comic.id}}/thumbnail?api_key={{api_key}}">
                                    <span class="comic_caption">{{random_comic.series}} #{{random_comic.issue}}</span>
                                </a>
-                    
+
                 </div>
             </div>
-            <br>          
+            <br>
             <div class="main_recent">
                 <h3>Most Recent Additions</h3>
                 <div class="cover_list">
@@ -110,7 +112,7 @@
                                    <img src="/comic/{{comic.id}}/thumbnail?api_key={{api_key}}">
                                    <span class="comic_caption">{{comic.series}} #{{comic.issue}}</span>
                                </a>
-                            </li>    
+                            </li>
                         {% end %}
                     {% end %}
                 </ul>
@@ -128,23 +130,23 @@
                                    <img src="/comic/{{comic.id}}/thumbnail?api_key={{api_key}}">
                                    <span class="comic_caption">{{comic.series}} #{{comic.issue}}</span>
                                </a>
-                            </li>    
+                            </li>
                         {% end %}
                     {% end %}
                 </ul>
                 </div>
-            </div>            
+            </div>
             <br>
                 <div id="main_browse">
                     <h3>Entity Browser</h3>
                     Browse through the comic database by clicking entity types, then values, to narrow down the list of comics.
                     Clicking "comics" will give the filtered-down list.<br>
-                    
+
                     <center><b><a href="entities/browse/">
                         Entity browser
                     </a></b></center>
                 </div>
-            <br>  		 
+            <br>
             <div id="main_search">
                 <h3>Search Comics</h3>
                 <div>
@@ -170,7 +172,7 @@
                                             <option value="{{role}}">{{role}}</option>
                                         {% end %}
                                     {% end %}
-                                </select>	
+                                </select>
                             </span>
 
                             <br>
@@ -186,15 +188,15 @@
                                 <option value="volume">Volume</option>
                                 <option value="issue">Issue</option>
                                 <option value="date">Publication Date</option>
-                                </select>	
+                                </select>
                             </span>
                             <span class="param"><label>Order descending</label><input type="checkbox" name="order_desc"></span>
-    
+
                             <span class="param"><label>Max Results</label><input type="text" name="per_page"></span>
                             -->
                             <input type="hidden" name="credit" id="credit_input">
                             <span class="param"><label>.  </label><input type="submit" value="Search"/></span>
-                        </form>         
+                        </form>
                     </div>
                     <div id="main_search_help">
                         <span>
@@ -209,19 +211,19 @@
                             <br>
                             2014<br>
                             2014-03<br>
-                            2014-03-12<br>			
+                            2014-03-12<br>
                         </span>
-                    </div> 
+                    </div>
                 </div>
             </div>
-            <br>   
-        
+            <br>
+
         </div>
-    
+
         <div id=navigation>
             {% include menu.html %}
         </div>
-       
+
     </body>
 </html>
 

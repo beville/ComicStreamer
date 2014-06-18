@@ -2,17 +2,20 @@
 <html>
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <link rel="icon" href="/favicon.ico" />	      
+        <link rel="icon" href="/favicon.ico" />
+
+		{% include head_links.html %}
+
         <title>ComicStreamer - Search Results</title>
-        
+
         <style type="text/css" title="currentStyle">
             @import "{{ static_url('datatables/media/css/demo_page.css') }}";
             @import "{{ static_url('datatables/media/css/demo_table.css') }}";
-            @import "{{ static_url('datatables/examples/examples_support/themes/smoothness/jquery-ui-1.8.4.custom.css') }}";         
-            @import "{{ static_url('qtip2/jquery.qtip.css') }}";         
-            @import "{{ static_url('comicstreamer.css') }}";    
+            @import "{{ static_url('datatables/examples/examples_support/themes/smoothness/jquery-ui-1.8.4.custom.css') }}";
+            @import "{{ static_url('qtip2/jquery.qtip.css') }}";
+            @import "{{ static_url('comicstreamer.css') }}";
         </style>
-        
+
         <script type="text/javascript" language="javascript">
             // helper function to give us Python-style formats
             if (!String.format)
@@ -20,9 +23,9 @@
                 String.format = function(format)
                 {
                     var args = Array.prototype.slice.call(arguments, 1);
-                    return format.replace(/{(\d+)}/g, function(match, number) { 
+                    return format.replace(/{(\d+)}/g, function(match, number) {
                       return typeof args[number] != 'undefined'
-                        ? args[number] 
+                        ? args[number]
                         : match
                       ;
                     });
@@ -34,8 +37,8 @@
                 return f.toString().
                     replace(/^[^\/]+\/\*!?/, '').
                     replace(/\*\/[^\/]+$/, '');
-            }             
-      
+            }
+
             // create tooltip html string (not really a comment!)
             // TODO: figure out how to do this with CSS
             var toolTipHTML = hereDoc(function() {/*!
@@ -48,7 +51,7 @@
                                         <img src="../comic/{5}/thumbnail">
                                     </a>
                                 </div>
-                            </td> 
+                            </td>
                         </tr>
                         <tr>
                             <td>
@@ -60,19 +63,19 @@
                             </td>
                         </tr>
                     </tbody>
-                    </table>  
+                    </table>
                 */ });
-        
-           
+
+
         </script>
-        
+
         <script type="text/javascript" language="javascript" src="{{ static_url('datatables/media/js/jquery.js') }}"></script>
         <script type="text/javascript" language="javascript" src="{{ static_url('datatables/media/js/jquery.dataTables.js') }}"></script>
         <script src="{{ static_url('qtip2/jquery.qtip.js') }}"></script>
-        
-        
+
+
         <script type="text/javascript" charset="utf-8">
-        
+
             function createRowCallback(nRow, comic, iDisplayIndex)
             {
                 // When each row is created, setup its tooltip HTML
@@ -97,13 +100,13 @@
                             button: 'Close'
                          },
                         position: {
-                            target: $(window), 
+                            target: $(window),
                             my: 'center',
                             at: 'center',
                             viewport: $(window),
                             adjust: {
                                 screen: true,
-                            } 
+                            }
                         },
                         style: {
                             classes: 'qtip-blue qtip-shadow',
@@ -111,9 +114,9 @@
                         }
                     });
 
-                return nRow;            
+                return nRow;
             }
-            
+
             var table_init =
             {
                 "bProcessing": true,
@@ -138,11 +141,11 @@
                               return data.split(/[\\/]/).pop();
                       }
                    },
-                      
+
                    ],
-                "fnRowCallback": createRowCallback,            
+                "fnRowCallback": createRowCallback,
             };
-        
+
             $(document).ready(
                 function()
                 {
@@ -151,10 +154,10 @@
             );
         </script>
 
- 
+
     </head>
     <body>
-   
+
         <div id="header"><h2>ComicStreamer - Search Results</h2></div>
         <div id=content>
             <table id="resultset" width="80%">
@@ -174,22 +177,22 @@
                 <tbody>
                 </tbody>
             </table>
-    
-            <br>	  
+
+            <br>
             <div id="tbd">
                 TBD:
                 <li>Better table style</li>
                 <li>Better popups</li>
                 <li>More columns,(horiz scrolling??)</li>
                 <li>File download links in popup</li>
-                <li>Thumbnails in table??</li>	  
+                <li>Thumbnails in table??</li>
             </div>
         </div>
-    
+
         <div id=navigation>
             {% include menu.html %}
-        </div> 
-       
+        </div>
+
     </body>
 </html>
 

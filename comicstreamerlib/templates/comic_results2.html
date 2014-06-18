@@ -4,44 +4,47 @@
 <html>
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <link rel="icon" href="/favicon.ico" />	      
+        <link rel="icon" href="/favicon.ico" />
+
+		{% include head_links.html %}
+
         <title>{{title}}</title>
 
         <style type="text/css" title="currentStyle">
-            @import "{{ static_url('dynatable/jquery.dynatable.css') }}";    
-            @import "{{ static_url('qtip2/jquery.qtip.css') }}";   
+            @import "{{ static_url('dynatable/jquery.dynatable.css') }}";
+            @import "{{ static_url('qtip2/jquery.qtip.css') }}";
             @import "{{ static_url('comicstreamer.css') }}";
-        </style>    
+        </style>
         <script type="text/javascript" language="javascript" src="https://s3.amazonaws.com/dynatable-docs-assets/js/jquery-1.9.1.min.js"></script>
 
         <script type="text/javascript" src="{{ static_url('dynatable/jquery.dynatable.js') }}"></script>
         <script src="{{ static_url('qtip2/jquery.qtip.js') }}"></script>
-         
+
         <script type="text/javascript" charset="utf-8">
 
             function populateComicDetails(cd, comic)
             {
-                
+
                 var thumb_url = '/comic/'+ comic.id +'/thumbnail?api_key={{api_key}}';
                 var reader_url = '/comic/'+ comic.id +'/reader?api_key={{api_key}}';
                 var download_url = '/comic/'+ comic.id +'/file?api_key={{api_key}}';
                 var json_url = '/comic/'+ comic.id +'?api_key={{api_key}}';
-            
+
                 $(cd).find('.cd_thumbnail').attr('src', thumb_url);
                 $(cd).find(".cd_reader_link").attr('href', reader_url);
-            
+
                 //$(cd).find(".cd_file_link").text(comic.path);
                 $(cd).find(".cd_path").text(comic.path);
-                
+
                 $(cd).find(".cd_file_link").attr('href', download_url);
                 $(cd).find(".cd_json_link").attr('href', json_url);
-            
+
                 str = comic.series;
                 if (comic.issue !== "") {
                     str = str + ' #' + comic.issue;
                 }
                 $(cd).find(".cd_issue").text(str);
-            
+
                 if (comic.year !== "") {
                     str = comic.year.toString();
                     if (comic.month !== "") {
@@ -51,32 +54,32 @@
                     str = '(' + str + ')'
                     $(cd).find(".cd_date").text(str);
                 }
-            
+
                 if (comic.title !== "") {
                     str = '"' + comic.title + '"';
                     $(cd).find(".cd_title").text(str);
                 }
-            
+
                 if (comic.volume !== "") {
                     str = "vol. " + comic.volume.toString() + ", ";
                     $(cd).find(".cd_volume").text(str);
                 }
-            
+
                 $(cd).find(".cd_publisher").text(comic.publisher);
                 $(cd).find(".cd_pagecount").text("[" + comic.page_count + " pages]") ;
-                
+
                 comments = comic.comments
                 if (comments != null && comments.length > 500)
                 {
                     comments = comments.substring(0,500) + "..."
                 }
-            
+
                 $(cd).find(".cd_comments").text(comments);
-            
+
                 for (var property in comic.credits) {
                     $(cd).find('.cd_credits').append('<tr><td>' + property + '</td><td>' + comic.credits[property].join(", ") + '</td></tr>');
                 }
-            
+
                 if (comic.hasOwnProperty("characters") && comic.characters.length != 0) {
                     $(cd).find('.cd_lists').append('<tr><td>Characters</td><td>' + comic.characters.join(", ") + '</td></tr>');
                 }
@@ -93,7 +96,7 @@
                     $(cd).find('.cd_lists').append('<tr><td>Tags</td><td>' + comic.tags.join(", ") + '</td></tr>');
                 }
                 return cd;
-            }        
+            }
 
             function myAttributeWriter(record)
             {
@@ -111,7 +114,7 @@
                     else
                     {
                         val = "";
-                    } 
+                    }
                 }
 
                 return val;
@@ -119,40 +122,40 @@
             function myRowWriter(rowIndex, record, columns, cellWriter)
             {
                 var tr = '';
-                
+
                 // grab the record's attribute for each column
                 for (var i = 0, len = columns.length; i < len; i++)
                 {
                     tr += cellWriter(columns[i], record);
                 }
-            
+
                 // add a special id with the comic ID for lookup later on
                 rowstr =  '<tr id="comic'+ record.id +'">' + tr + '</tr>';
 
                 //debugger;
                 return rowstr;
             }
-            
+
             function addToolTips(rows)
             {
-                
+
                 var dynatable = $("#resultset").data("dynatable")
                 var comics = dynatable.settings.dataset.records
-                
+
                 for(var i=0, len=comics.length; i < len; i++)
                 {
                     comic = comics[i];
                     row = $('#comic'+comic.id)
 
                     // setup tooltip HTML
-                    
+
                     // Find the hidden comic details template and clone it
                     cd = $('#cd_template').clone();
                     // Populate it from the comic record
                     cd = populateComicDetails(cd, comic);
                     //grab the html text
                     popup_text = $(cd).html()
-                    
+
                     row.qtip( {
                             show: 'click',
                             hide:
@@ -173,7 +176,7 @@
                                 adjust: {
                                     screen: true,
                                     mouse: false,
-                                } 
+                                }
                             },
                             style: {
                                 classes: 'qtip-blue qtip-shadow',
@@ -184,8 +187,8 @@
 
                 }
             }
-            
-        
+
+
             function setupTable()
             {
                 if (location.search.length > 0)
@@ -194,7 +197,7 @@
                 }
                 else
                 {
-                    args = location.search  + '?api_key={{api_key}}';                  
+                    args = location.search  + '?api_key={{api_key}}';
                 }
                 var table_init =
                 {
@@ -213,7 +216,7 @@
                         //ajaxMethod: 'GET',
                         perPageDefault: 10,
                         perPageOptions: [10,20,50,100,200],
-                     
+
                     },
                     params:
                     {
@@ -228,14 +231,14 @@
                     {
                         _rowWriter: myRowWriter,
                         _attributeWriter: myAttributeWriter
-                    },   
+                    },
                 }
-    
+
                 $('#resultset').dynatable( table_init);
                 $('#resultset').bind('dynatable:afterUpdate', addToolTips);
-                
+
             }
-            
+
             $(document).ready(
                 function()
                 {
@@ -244,12 +247,12 @@
             );
         </script>
 
- 
+
     </head>
-    <body>   
+    <body>
         <div id="header">
             {% include header.html %}
-        </div>  
+        </div>
         <div id="content">
             <table id="resultset" >
                 <thead>
@@ -266,19 +269,19 @@
                 <tbody>
                 </tbody>
             </table>
-            <br>	  
+            <br>
             <div id="tbd">
                 TBD:
                 <li>Better table style</li>
                 <li>Better popups</li>
                 <li>More columns?(horiz scrolling??)</li>
-                <li>Thumbnails in table??</li>	  
+                <li>Thumbnails in table??</li>
             </div>
         </div>
-    
+
         <div id=navigation>
             {% include menu.html %}
-        </div> 
+        </div>
 
         <!---------------------------------------------------------------------------->
         <!-- JS will clone and populate this hidden chunk later for each comic popup -->
@@ -295,7 +298,7 @@
             <div class="comicdetails_top"> <a class="cd_reader_link" target="_blank">
                 <img class="cd_thumbnail" />
                 </a>
-        
+
                 <div class="comicdetails_top_right">
                     <div class="cd_issue"></div>
                     <div class="cd_title"></div>

@@ -4,25 +4,27 @@
 <html>
     <head>
         <meta charset="utf8">
-        <link rel="icon" href="/favicon.ico" />	      
-        
+        <link rel="icon" href="/favicon.ico" />
+
+		{% include head_links.html %}
+
         <title>{{title}}</title>
-        
+
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-        
+
         <style type="text/css">
             @import "{{ static_url('comicstreamer.css') }}";
-            
+
 
         </style>
         <script type="text/javascript" charset="utf-8">
-        
+
             $(document).ready(
                 function()
                 {
                     //target_port=0;
-                    //if (location.port != target_port) 
-                    //{    
+                    //if (location.port != target_port)
+                    //{
                     //    location.port = target_port;
                     //}
                     use_api_key_toggle();
@@ -31,7 +33,7 @@
             );
             function create_key()
             {
-                
+
                 function s4() {
                   return Math.floor((1 + Math.random()) * 0x10000)
                              .toString(16)
@@ -39,7 +41,7 @@
                 }
                 var key = s4() + s4() + s4() + s4() +
                        s4() + s4() + s4() + s4();
-                $("#api_key").val(key);               
+                $("#api_key").val(key);
             }
             function use_api_key_toggle()
             {
@@ -51,22 +53,22 @@
                 $("#username").prop('disabled', !($("#use_auth").is(':checked')));
                 $("#password").prop('disabled', !($("#use_auth").is(':checked')));
                 $("#password_confirm").prop('disabled', !($("#use_auth").is(':checked')));
-            }            
-        </script>       
+            }
+        </script>
     </head>
     <body>
         <div id="header">
             {% include header.html %}
-        </div>          
+        </div>
         <div id=content>
-            
+
             <form class="entry_form" action="configure" method="post">
                 {% module xsrf_form_html() %}
                 <div>
                     <label>
                         <span>Port</span><input id="port" type="text" name="port" value="{{formdata['port']}}" />
                     </label>
-                    
+
                     <label>
                         <span>Comic Folders</span> <span class="help">enter one folder per line</span><textarea id="folders" name="folders" >{{formdata['folders']}}</textarea>
                         <span>Use Authenication</span><input type="checkbox" name="use_authentication" class="formcheck" id="use_auth" value="use" onclick="use_auth_toggle()" {{formdata['use_authentication']}}>
@@ -82,17 +84,17 @@
                         <span>Launch Web Browser on Startup</span><input type="checkbox" name="launch_browser" class="formcheck" id="launch_browser" value="launch"  {{formdata['launch_browser']}}>
                         <input type="submit" id="submit_btn" class="formbutton" value="Save" />
                     </label>
-                
+
                 </div>
                 <span id="statusbad">{{failure}}</span><span id="statusgood">{{success}}</span>
             </form>
 
         </div>
-        
+
         <div id=navigation>
             {% include menu.html %}
         </div>
-    
+
     </body>
 </html>
 
