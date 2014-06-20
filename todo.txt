@@ -14,16 +14,21 @@ OS Integration:
 Database:
     Versioning scheme?? (migrate or rebuild with each change?)
 		rebuilding should try to preserve user data such as bookmarks, favorites, reading lists, users(?)
+        
+    Keep schema version in own table
+    DB resets should drop tables, not delte whole file
+    
     bug: per_page setting slice off child lists...?? (mitigated by ordering
     bug: possible cascade confusion on lots of deletes/adds
-    bug: wrong counts on person query (with multiple roles for person) with per_page set
+    
 ----------------
 General Server:
     more efficient queries (less joins, less selects)
     look into https
         need to provide default key and cert files, but offer option for user-supplied
     multiple users??
-	  bookmarks, favorites, readinglists
+      bookmarks, favorites, readinglists
+    look into  UPNP support via Coherence (https://github.com/coherence-project/Coherence)
 ------------------
 API:
     Versioning!
@@ -49,6 +54,7 @@ Monitor:
     config setting to not auto-remove when book is missing (possible temporarily missing USB driver, for example)
 	watchdog doesn't trigger on file moving out of watched area
 	maybe do intermitent commits when scanning files
+	OR:  do initial commit of all files without metadata tag scans for (relative) immediate availability
    
 Windows:
 
