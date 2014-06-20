@@ -28,6 +28,7 @@ If you have web development or graphic design skills, and would like to help out
 * python-dateutil
 * pillow (PIL fork)
 * configobj >= 5.0.5
+* natsort
 
 Optional:
 * pybonjour (for automatic server discovery)
