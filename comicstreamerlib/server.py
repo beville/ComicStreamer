@@ -638,7 +638,8 @@ class FolderAPIHandler(JSONResultAPIHandler):
                 # create a list of subfolders    
                 for o in os.listdir(path):
                     if os.path.isdir(os.path.join(path,o)):
-                        sub_path = u"/folders" + args + u"/" + o   
+                        sub_path = u"/folders" + args + u"/" + o
+                        sub_path = urllib.quote(sub_path.encode("utf-8"))
                         item = {
                             'name': o,
                             'url_path' : sub_path
@@ -646,7 +647,8 @@ class FolderAPIHandler(JSONResultAPIHandler):
                         response['folders'].append(item)
                 # see if there are any comics here
                 response['comics']['count'] = session.query(Comic).filter(Comic.folder == path).count()
-                response['comics']['url_path'] = u"/comiclist?folder={0}".format(path)
+                comic_path = u"/comiclist?folder=" + urllib.quote(u"{0}".format(path).encode('utf-8'))
+                response['comics']['url_path'] = comic_path
 
             except FloatingPointError as e:
                 print e
