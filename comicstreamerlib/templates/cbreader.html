@@ -37,7 +37,7 @@
 
         book=new ComicBook('comic',pages ,
             {
-                libPath: "{{ static_url('comicbook/js') }}",
+                libPath: "{{ static_url('comicbook/js/') }}",
                 displayMode: 'single',
                 keyboard: { next: 39, previous: 37 },
                 pageTurnCallback: function(page){$.getJSON( 'page/'+(page-1)+'/bookmark?api_key={{api_key}}')}
