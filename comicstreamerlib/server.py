@@ -1008,7 +1008,7 @@ class ConfigPageHandler(BaseHandler):
                         if  f1 == f:
                             failure_strs.append(u"Can't have repeat folders.")
                             raise Exception
-                        if  f1.startswith(f):
+                        if  f1.startswith(f + os.path.sep):
                             failure_strs.append(u"One folder can't contain another.")
                             raise Exception
         except Exception:
@@ -1319,5 +1319,4 @@ class APIServer(tornado.web.Application):
             self.comicArchiveList.append(ca)
             if len(self.comicArchiveList) > 10:
                 self.comicArchiveList.pop(0)
-                print "removing old item"
             return ca
