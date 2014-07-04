@@ -369,6 +369,12 @@ class ImageAPIHandler(GenericAPIHandler):
         return image_data
     
     def resizeImage(self, max, image_data):
+        # disable WebP for now, due a memory leak in python library
+        imtype = imghdr.what(StringIO.StringIO(image_data))
+        if imtype == "webp":
+            with open(AppFolders.imagePath("default.jpg"), 'rb') as fd:
+                image_data = fd.read()
+        
         im = Image.open(StringIO.StringIO(image_data))
         w,h = im.size
         if max < h:
@@ -885,7 +891,7 @@ class MainHandler(BaseHandler):
         random_comic = session.query(Comic).order_by(func.random()).first()
         if random_comic is None:
             random_comic = type('fakecomic', (object,), 
-             {'id':0, 'series':'Oops', 'issue':1})()
+             {'id':0, 'series':'No Comics', 'issue':0})()
         self.render("index.html", stats=stats,
                     random_comic=random_comic,
                     recently_added = list(recently_added_comics),
