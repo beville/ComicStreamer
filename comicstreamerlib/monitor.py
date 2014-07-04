@@ -454,9 +454,6 @@ class Monitor():
         # create dictionarys of all those objects, so we don't have to query the database 
         self.createChildDicts()
         
-        #sort the list so that the last modified file goes in last
-        md_list = sorted(md_list, key=lambda md: md.mod_ts)
-
         for md  in md_list:
             self.addComicFromMetadata( md )
             if self.quit:
@@ -478,7 +475,10 @@ class Monitor():
         logging.info(u"Monitor: Beginning file scan...")
         self.setStatusDetail(u"Monitor: Making a list of all files in the folders...")
 
-        filelist = utils.get_recursive_filelist( dirs ) 
+        filelist = utils.get_recursive_filelist( dirs )
+        self.setStatusDetail(u"Monitor: sorting recursive file list")
+        filelist = sorted(filelist, key=os.path.getmtime)
+        
         self.setStatusDetail(u"Monitor: done listing files.")
         
         self.add_count = 0      
@@ -507,10 +507,12 @@ class Monitor():
         self.setStatusDetail(u"Monitor: found {0} files to inspect...".format(len(filelist)))
         
         # make a list of all path strings in comic table
-        db_pathlist = set([i[0] for i in list(self.session.query(Comic.path))])
-        filelist = set(filelist)
+        db_pathlist = [i[0] for i in list(self.session.query(Comic.path))]
         
-        filelist = filelist - db_pathlist
+        self.setStatusDetail(u"Monitor: removing already scanned files from file list")
+        for f in db_pathlist:
+            if f in filelist:
+                filelist.remove(f)
         db_pathlist = None
 
         self.setStatusDetail(u"Monitor: {0} new files to scan...".format(len(filelist)), logging.INFO)
