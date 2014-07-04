@@ -20,6 +20,10 @@ filters on the sub-lists (characters, credits, etc. ) can be slow.
 If you have web development or graphic design skills, and would like to help out, please contact me at comictagger@gmail.com.
 In particular, ComicStreamer needs a new logo!
 
+[Chunky Comic Reader](http://chunkyreader.com/) for iPad has added experimental ComicStreamer support. Pro upgrade required, but it's well
+worth it for the other features you get.  Check it out!  If you are comic reader developer (any platform), and would like to add CS support,
+please contact me if you need any special support or features.
+
 ----------
 
 #### Compiled Package Downloads
