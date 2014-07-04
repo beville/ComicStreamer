@@ -50,6 +50,7 @@
 /comic/{id}/page/{pagenum}/bookmark
     - sets the time of last access and last page read for the comic.
         client would fetch this for each page turn
+        if {pagenum} is "clear"  clears bookmark for the given book
 
 /comic/{id}/thumbnail
     - return specific small cover image of specific comic
@@ -95,6 +96,7 @@
                     only comics added the to database since given date
                 lastread_since
                     only comics that have been read since given date
+					(Set this value to something like "1970" to filter out unread comics)
                 per_page
                     max amount of results to be returned
                 offset
@@ -108,6 +110,10 @@
 
             date format is "YYYY-MM-DD hh:mm:ss", where the right-most (most granular) portions may be omitted
 
+/folders/[path]
+	- Return list of folders  with names and access URLS), and list of comics in the specific folder
+      Without a path, returns just the top level folders
+      
 /entities/[{key1}/[{val1}/[{key2}/[{val2}/....{keyN}/[{valN}]]]]]
     TBD
 
