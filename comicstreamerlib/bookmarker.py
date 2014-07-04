@@ -70,14 +70,20 @@ class Bookmarker(threading.Thread):
     
             obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
             if obj is not None:
-                if int(pagenum) < obj.page_count:
-                    obj.lastread_ts = datetime.datetime.utcnow()
-                    obj.lastread_page = int(pagenum)
-                    logging.debug("Bookmarker: about to commit boommak ts={0}".format(obj.lastread_ts))
+                try:
+                    if pagenum.lower() == "clear":
+                        obj.lastread_ts =  None
+                        obj.lastread_page = None
+                    elif int(pagenum) < obj.page_count:
+                        obj.lastread_ts = datetime.datetime.utcnow()
+                        obj.lastread_page = int(pagenum)
+                        #logging.debug("Bookmarker: about to commit boommak ts={0}".format(obj.lastread_ts))
+                except Exception:
+                    logging.error("Problem setting bookmark {} on comic {}".format(pagenum, comic_id))
+                else:
                     session.commit()
-                    session.close()
-                    session = None
-                    	
+                    
+            session.close()
 
 #-------------------------------------------------
 

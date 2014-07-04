@@ -1195,7 +1195,7 @@ class APIServer(tornado.web.Application):
             (r"/deleted", DeletedAPIHandler),
             (r"/comic/([0-9]+)", ComicAPIHandler),
             (r"/comiclist", ComicListAPIHandler),
-            (r"/comic/([0-9]+)/page/([0-9]+)/bookmark", ComicBookmarkAPIHandler ),
+            (r"/comic/([0-9]+)/page/([0-9]+|clear)/bookmark", ComicBookmarkAPIHandler ),
             (r"/comic/([0-9]+)/page/([0-9]+)", ComicPageAPIHandler ),
             (r"/comic/([0-9]+)/thumbnail", ThumbnailAPIHandler),
             (r"/comic/([0-9]+)/file", FileAPIHandler),
