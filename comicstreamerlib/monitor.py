@@ -218,8 +218,8 @@ class Monitor():
         return obj
 
     def addComicFromMetadata(self, md ):
-        logging.debug(u"Adding {0} {1}\r".format(self.add_count, md.path))
-        sys.stdout.flush()
+        #logging.debug(u"Adding {0} {1}\r".format(self.add_count, md.path))
+        #sys.stdout.flush()
     
         self.add_count += 1
         
@@ -440,6 +440,37 @@ class Monitor():
         else:
             logging.info(detail)
 
+    def setStatusDetailOnly(self, detail):
+        self.statusdetail = detail
+            
+    def commitMetadataList(self, md_list):
+        # now that we have a chunk of  metadata is read in, make up lists of all the "named" entities to
+        # add to the DB before the actual comics are added
+
+        self.saveChildInfoToDB(md_list)
+
+        #logging.debug(u"Monitor: finish adding child sets")
+
+        # create dictionarys of all those objects, so we don't have to query the database 
+        self.createChildDicts()
+        
+        #sort the list so that the last modified file goes in last
+        md_list = sorted(md_list, key=lambda md: md.mod_ts)
+
+        for md  in md_list:
+            self.addComicFromMetadata( md )
+            if self.quit:
+                self.setStatusDetail(u"Monitor: halting scan!")
+                return
+                
+            # periodically commit   
+            #if self.add_count % 1000 == 0:
+            #    self.session.commit()
+            #    self.setStatusDetail(u"Monitor: {0} of {1} added...".format(self.add_count,len(md_list)), logging.INFO)
+                
+        if self.add_count > 0:  
+            self.session.commit()
+                    
     def dofullScan(self, dirs):
         
         self.status = "SCANNING"
@@ -490,42 +521,22 @@ class Monitor():
             md = self.getComicMetadata( filename )
             if md is not None:
                 md_list.append(md)
-            if self.read_count % 100 == 0 and self.read_count != 0:
-                self.setStatusDetail(u"Monitor: {0} of {1} scanned...".format(self.read_count,len(filelist)), logging.INFO)
-            if self.quit:
-                self.setStatusDetail(u"Monitor: halting scan!")
-                return 
-               
-        self.setStatusDetail(u"Monitor: finished scanning metadata in {0} of {1} files".format(self.read_count,len(filelist)), logging.INFO)
-        
-        filelist = None
-        
-        # now that all metadata is read in, make up lists of all the "named" entities to
-        # add to the DB before the actual comics are added
-
-        self.saveChildInfoToDB(md_list)
-
-        #logging.debug(u"Monitor: finish adding child sets")
-
-        # create dictionarys of all those objects, so we don't have to query the database 
-        self.createChildDicts()
-        
-        #sort the list to the last modified file goes in last
-        md_list = sorted(md_list, key=lambda md: md.mod_ts)
-
-        for md  in md_list:
-            self.addComicFromMetadata( md )
+            self.setStatusDetailOnly(u"Monitor: {0} files: {1} scanned, {2} added to library...".format(len(filelist), self.read_count,self.add_count))
             if self.quit:
                 self.setStatusDetail(u"Monitor: halting scan!")
                 return
-                
-            # periodically commit   
-            if self.add_count % 1000 == 0:
-                self.session.commit()
-                self.setStatusDetail(u"Monitor: {0} of {1} added...".format(self.add_count,len(md_list)), logging.INFO)
-                
-        if self.add_count > 0:  
-            self.session.commit()
+            
+            #every so often, commit to DB
+            if self.read_count % 100 == 0 and self.read_count != 0:
+                self.commitMetadataList(md_list)
+                md_list = []
+        
+        if len(md_list) > 0:
+            self.commitMetadataList(md_list)
+        
+        self.setStatusDetail(u"Monitor: finished scanning metadata in {0} of {1} files".format(self.read_count,len(filelist)), logging.INFO)
+
+ 
         
         self.status = "IDLE"
         self.statusdetail = ""
