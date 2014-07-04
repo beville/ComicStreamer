@@ -2,19 +2,23 @@
 #### Introduction
 
 
-ComicStreamer is a media server app for sharing a library of comic files via a simple REST API to client applications.  It allows for searching for comics based on a rich set of metad
-ata including fields like series name, title, publisher, story arcs, characters, and creator credits.  Client applications may access comics by entire archive file, or by fetching pag
+ComicStreamer is a media server app for sharing a library of comic files via a simple REST API to client applications.
+It allows for searching for comics based on a rich set of metadata including fields like series name, title, publisher,
+story arcs, characters, and creator credits.  Client applications may access comics by entire archive file, or by fetching pag
 e images, one at a time.
 
-A web interface is available for searching and viewing comics files, and also for configuration, log viewing, and some control operations.
+A web interface is available for searching and viewing comics files, and also for configuration, log viewing, and some control
+operations.
 
-It's best used on libraries that have been tagged internally with tools like [ComicTagger](http://code.google.com/p/comictagger/) or [ComicRack](http://comicrack.cyolito.com/). Howeve
-r, even without tags, it will try to parse out some information from the filename (usually series, issue number, and publication year).
+It's best used on libraries that have been tagged internally with tools like [ComicTagger](http://code.google.com/p/comictagger/) or
+[ComicRack](http://comicrack.cyolito.com/). However, even without tags, it will try to parse out some information from the filename
+(usually series, issue number, and publication year).
 
-ComicStreamer is very early ALPHA stages, and may be very flakey, eating up memory and CPU cycles. In particular, with very large datasets, filters on the sub-lists (characters, credits, etc. ) can be slow.
+ComicStreamer is very early ALPHA stages, and may be very flakey, eating up memory and CPU cycles. In particular, with very large datasets,
+filters on the sub-lists (characters, credits, etc. ) can be slow.
 
-
-If you have web development or graphic design skills, and would like to help out, please contact me at comictagger@gmail.com.  In particular, ComicStreamer needs a logo!
+If you have web development or graphic design skills, and would like to help out, please contact me at comictagger@gmail.com.
+In particular, ComicStreamer needs a new logo!
 
 ----------
 
@@ -60,10 +64,11 @@ Settings, database, and logs are kept in the user folder:
 
 From the source, just run "comicstreamer" in the base folder (on windows you may want to rename it comicstreamer.py).
 
-For the binary builds, run from the installed app icon.  There should be no taskbar/dock presence, but an icon should appear in the system tray (windows), or status menu (mac).
+For the binary builds, run from the installed app icon.  There should be no taskbar/dock presence, but an icon should appear in the system tray
+(windows), or status menu (mac).
 
-A web browser should automatically open to "http://localhost:32500".  On your first run, use the "config" page to set the comic folders, and the "control" page to restart the server. 
- It will start scanning, and all comics in the given folders and sub folders will be added to database.
+A web browser should automatically open to "http://localhost:32500".  On your first run, use the "config" page to set the comic folders, and
+the "control" page to restart the server.  It will start scanning, and all comics in the given folders and sub folders will be added to database.
 
 Some tips:
 
