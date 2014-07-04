@@ -43,32 +43,41 @@ class Bookmarker(threading.Thread):
         self.join()
         
     def setBookmark(self, comic_id, pagenum):
-        self.queue.put((comic_id, pagenum))
+        # for now, don't defer the bookmark setting, maybe it's not needed
+        self.actualSetBookmark( comic_id, pagenum)
+        #self.queue.put((comic_id, pagenum))
         
     def run(self):
         logging.debug("Bookmarker: started main loop.")
-        self.session = self.dm.Session()
-        
+        pagenum = 0
         while True:
             try:
                 (comic_id, pagenum) = self.queue.get(block=True, timeout=1)
             except:
                 comic_id = None
                 
-            if comic_id is not None:
-                obj = self.session.query(Comic).filter(Comic.id == int(comic_id)).first()
-                if obj is not None:
-                    if int(pagenum) < obj.page_count:
-                        obj.lastread_ts = datetime.datetime.utcnow()
-                        obj.lastread_page = int(pagenum)
-                        self.session.commit()
+            self.actualSetBookmark(comic_id, pagenum)
                         
             if self.quit:
                 break
             
-        self.session.close()
-        self.session = None
         logging.debug("Bookmarker: stopped main loop.")
+
+    def actualSetBookmark(self, comic_id, pagenum):
+                
+        if comic_id is not None:
+            session = self.dm.Session()
+    
+            obj = session.query(Comic).filter(Comic.id == int(comic_id)).first()
+            if obj is not None:
+                if int(pagenum) < obj.page_count:
+                    obj.lastread_ts = datetime.datetime.utcnow()
+                    obj.lastread_page = int(pagenum)
+                    logging.debug("Bookmarker: about to commit boommak ts={0}".format(obj.lastread_ts))
+                    session.commit()
+                    session.close()
+                    session = None
+                    	
 
 #-------------------------------------------------
 
