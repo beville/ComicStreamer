@@ -525,20 +525,28 @@ class ComicArchive:
 		self.resetCache()
 		self.default_image_path = default_image_path
 		
-		if self.rarTest(): 
-			self.archive_type =  self.ArchiveType.Rar
-			self.archiver = RarArchiver( self.path, rar_exe_path=self.rar_exe_path )
-			
-		elif self.zipTest():
-			self.archive_type =  self.ArchiveType.Zip
-			self.archiver = ZipArchiver( self.path )
-			
-		elif os.path.isdir( self.path ):
-			self.archive_type =  self.ArchiveType.Folder
-			self.archiver = FolderArchiver( self.path )			
+		# Use file extension to decide which archive test we do first
+		ext = os.path.splitext(path)[1].lower()
+		
+		self.archive_type =  self.ArchiveType.Unknown
+		self.archiver = UnknownArchiver( self.path )
+
+		if ext == ".cbr" or ext == ".rar":
+			if self.rarTest(): 
+				self.archive_type =  self.ArchiveType.Rar
+				self.archiver = RarArchiver( self.path, rar_exe_path=self.rar_exe_path )
+				
+			elif self.zipTest():
+				self.archive_type =  self.ArchiveType.Zip
+				self.archiver = ZipArchiver( self.path )
 		else:
-			self.archive_type =  self.ArchiveType.Unknown
-			self.archiver = UnknownArchiver( self.path )
+			if self.zipTest():
+				self.archive_type =  self.ArchiveType.Zip
+				self.archiver = ZipArchiver( self.path )
+				
+			elif self.rarTest(): 
+				self.archive_type =  self.ArchiveType.Rar
+				self.archiver = RarArchiver( self.path, rar_exe_path=self.rar_exe_path )
 
 		if ComicArchive.logo_data is None:
 			#fname = ComicTaggerSettings.getGraphic('nocover.png')
