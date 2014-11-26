@@ -19,11 +19,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
 import threading
 import select
 import sys
 import logging
+import socket
 
 try:
     import pybonjour
@@ -34,8 +34,8 @@ except:
 class BonjourThread(threading.Thread):
     def __init__(self, port):
         super(BonjourThread, self).__init__()
-        self.name    = "ComicStreamer"
-        self.regtype = "_http._tcp"
+        self.name    = socket.gethostname()
+        self.regtype = "_comicstreamer._tcp"
         self.port    = port
         self.daemon = True
          
