@@ -446,6 +446,7 @@ class Monitor():
     def commitMetadataList(self, md_list):
         # now that we have a chunk of  metadata is read in, make up lists of all the "named" entities to
         # add to the DB before the actual comics are added
+        #self.setStatusDetailOnly(u"Monitor: Adding {0} files to library...".format(len(md_list)))
 
         self.saveChildInfoToDB(md_list)
 
@@ -476,7 +477,7 @@ class Monitor():
         self.setStatusDetail(u"Monitor: Making a list of all files in the folders...")
 
         filelist = utils.get_recursive_filelist( dirs )
-        self.setStatusDetail(u"Monitor: sorting recursive file list")
+        self.setStatusDetail(u"Monitor: sorting recursive file list ({0} items)".format(len(filelist)))
         filelist = sorted(filelist, key=os.path.getmtime)
         
         self.setStatusDetail(u"Monitor: done listing files.")
@@ -530,8 +531,9 @@ class Monitor():
             
             #every so often, commit to DB
             if self.read_count % 100 == 0 and self.read_count != 0:
-                self.commitMetadataList(md_list)
-                md_list = []
+                if len(md_list) > 0:
+                    self.commitMetadataList(md_list)
+                    md_list = []
         
         if len(md_list) > 0:
             self.commitMetadataList(md_list)
