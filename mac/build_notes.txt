@@ -10,6 +10,7 @@ brew install webp
 brew install pyqt
 brew install unrar
 brew install homebrew/python/pillow
+brew install libyaml
 pip install configobj
 pip install configparser
 pip install python-dateutil
